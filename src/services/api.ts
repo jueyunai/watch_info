@@ -15,9 +15,10 @@ export class ApiError extends Error {
 }
 
 export async function fetchUserInfo(username: string): Promise<UserInfo> {
+  const path = `users/${username}`;
   const url = import.meta.env.DEV 
-    ? `${BASE_URL}/users/${username}`
-    : `${BASE_URL}users/${username}`;
+    ? `${BASE_URL}/${path}`
+    : `${BASE_URL}${encodeURIComponent(path)}`;
   
   const response = await fetch(url, {
     headers: {
@@ -42,9 +43,13 @@ export async function fetchReviews(
   limit: number = PAGE_SIZE
 ): Promise<ReviewsResponse> {
   const path = `users/${userId}/reviews?_user_id=${userId}&skip=${skip}&limit=${limit}`;
+  
+  // 生产环境需要对path进行URL编码，因为它包含查询参数
   const url = import.meta.env.DEV 
     ? `${BASE_URL}/${path}`
-    : `${BASE_URL}${path}`;
+    : `${BASE_URL}${encodeURIComponent(path)}`;
+  
+  console.log(`Fetching URL: ${url}`);
   
   const response = await fetch(url, {
     headers: {
