@@ -1,7 +1,7 @@
 import type { UserInfo, ReviewItem, ReviewsResponse } from '../types';
 
-// 开发环境使用代理，生产环境直接请求
-const BASE_URL = import.meta.env.DEV ? '/api/v2' : 'https://watcha.cn/api/v2';
+// 开发环境使用Vite代理，生产环境使用Vercel API代理
+const BASE_URL = import.meta.env.DEV ? '/api/v2' : '/api/proxy?path=';
 const PAGE_SIZE = 20;
 
 export class ApiError extends Error {
@@ -15,7 +15,11 @@ export class ApiError extends Error {
 }
 
 export async function fetchUserInfo(username: string): Promise<UserInfo> {
-  const response = await fetch(`${BASE_URL}/users/${username}`, {
+  const url = import.meta.env.DEV 
+    ? `${BASE_URL}/users/${username}`
+    : `${BASE_URL}users/${username}`;
+  
+  const response = await fetch(url, {
     headers: {
       'Accept': 'application/json',
     },
@@ -37,7 +41,10 @@ export async function fetchReviews(
   skip: number = 0,
   limit: number = PAGE_SIZE
 ): Promise<ReviewsResponse> {
-  const url = `${BASE_URL}/users/${userId}/reviews?_user_id=${userId}&skip=${skip}&limit=${limit}`;
+  const path = `users/${userId}/reviews?_user_id=${userId}&skip=${skip}&limit=${limit}`;
+  const url = import.meta.env.DEV 
+    ? `${BASE_URL}/${path}`
+    : `${BASE_URL}${path}`;
   
   const response = await fetch(url, {
     headers: {
