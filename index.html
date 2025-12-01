@@ -10,7 +10,7 @@
     <div id="app">
       <header>
         <h1>🦔 猹评导出工具</h1>
-        <p class="subtitle">从观猹平台导出你的所有猹评数据</p>
+        <p class="subtitle">从观猹平台导出你的所有猹评和讨论数据</p>
       </header>
 
       <main>
@@ -22,8 +22,19 @@
               id="url-input" 
               placeholder="https://watcha.cn/@用户名"
             />
-            <button id="fetch-btn">获取猹评</button>
           </div>
+          <div class="type-selector">
+            <label>数据类型：</label>
+            <label class="radio-label">
+              <input type="radio" name="data-type" value="reviews" checked />
+              猹评
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="data-type" value="posts" />
+              讨论
+            </label>
+          </div>
+          <button id="fetch-btn">获取数据</button>
           <p id="error-msg" class="error hidden"></p>
         </section>
 
@@ -36,7 +47,7 @@
         <section id="result-section" class="result-section hidden">
           <div class="result-header">
             <div class="stats">
-              <span id="total-count">共 0 条猹评</span>
+              <span id="total-count">共 0 条数据</span>
               <span id="filtered-count"></span>
             </div>
             <div class="actions">
@@ -50,7 +61,7 @@
             </div>
           </div>
 
-          <div id="reviews-list" class="reviews-list"></div>
+          <div id="data-list" class="data-list"></div>
         </section>
       </main>
 

@@ -201,38 +201,65 @@ button:disabled {
   font-size: 0.875rem;
 }
 
-.reviews-list {
+.type-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.75rem 0;
+}
+
+.type-selector label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: normal !important;
+  color: var(--text) !important;
+}
+
+.radio-label input[type="radio"] {
+  cursor: pointer;
+}
+
+.data-list {
   max-height: 600px;
   overflow-y: auto;
 }
 
-.review-item {
+.review-item, .post-item {
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border);
 }
 
-.review-item:last-child {
+.review-item:last-child, .post-item:last-child {
   border-bottom: none;
 }
 
-.review-header {
+.review-header, .post-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.75rem;
 }
 
-.product-name {
+.product-name, .post-title {
   font-weight: 600;
   color: var(--primary-dark);
 }
 
-.review-time {
+.review-time, .post-time {
   font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
-.review-content {
+.review-content, .post-content {
   color: var(--text);
   white-space: pre-wrap;
   word-break: break-word;

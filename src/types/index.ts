@@ -4,6 +4,7 @@ export interface UserInfo {
   nickname: string;
   username: string;
   review_count: number;
+  post_count?: number;
 }
 
 export interface ContentNode {
@@ -30,10 +31,34 @@ export interface ReviewsResponse {
   items: ReviewItem[];
 }
 
+// 讨论相关类型
+export interface PostItem {
+  id: number;
+  title: string;
+  content: ContentNode;
+  update_at: string;
+}
+
+export interface PostsResponse {
+  total: number;
+  skip: number;
+  limit: number;
+  count: number;
+  items: PostItem[];
+}
+
 // 应用数据类型
 export interface Review {
   id: number;
   productName: string;
+  updateAt: Date;
+  content: string;
+  rawUpdateAt: string;
+}
+
+export interface Post {
+  id: number;
+  title: string;
   updateAt: Date;
   content: string;
   rawUpdateAt: string;

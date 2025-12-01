@@ -1,10 +1,10 @@
 import './style.css';
-import type { Review, MonthOption } from './types';
+import type { Review, Post, MonthOption } from './types';
 import { parseWatchaUrl } from './utils/urlParser';
-import { fetchUserInfo, fetchAllReviews } from './services/api';
-import { transformReviews, sortReviewsByDate, filterReviewsByMonth } from './utils/reviewProcessor';
+import { fetchUserInfo, fetchAllReviews, fetchAllPosts } from './services/api';
+import { transformReviews, sortReviewsByDate, filterReviewsByMonth, transformPosts, sortPostsByDate, filterPostsByMonth } from './utils/reviewProcessor';
 import { formatDateTime, getRecentMonths } from './utils/timeUtils';
-import { exportToTxt } from './utils/exporter';
+import { exportToTxt, exportPostsToTxt } from './utils/exporter';
 
 // DOM 元素
 const urlInput = document.getElementById('url-input') as HTMLInputElement;
@@ -18,11 +18,14 @@ const totalCount = document.getElementById('total-count') as HTMLSpanElement;
 const filteredCount = document.getElementById('filtered-count') as HTMLSpanElement;
 const monthFilter = document.getElementById('month-filter') as HTMLSelectElement;
 const exportBtn = document.getElementById('export-btn') as HTMLButtonElement;
-const reviewsList = document.getElementById('reviews-list') as HTMLDivElement;
+const dataList = document.getElementById('data-list') as HTMLDivElement;
 
 // 应用状态
+let currentDataType: 'reviews' | 'posts' = 'reviews';
 let allReviews: Review[] = [];
 let filteredReviews: Review[] = [];
+let allPosts: Post[] = [];
+let filteredPosts: Post[] = [];
 let monthOptions: MonthOption[] = [];
 
 // 初始化月份筛选选项
@@ -84,6 +87,24 @@ function renderReviewItem(review: Review): string {
   `;
 }
 
+// 渲染单条讨论
+function renderPostItem(post: Post): string {
+  const time = formatDateTime(post.rawUpdateAt);
+  const content = post.content.length > 500 
+    ? post.content.slice(0, 500) + '...' 
+    : post.content;
+  
+  return `
+    <div class="post-item">
+      <div class="post-header">
+        <span class="post-title">${escapeHtml(post.title)}</span>
+        <span class="post-time">${time}</span>
+      </div>
+      <div class="post-content">${escapeHtml(content)}</div>
+    </div>
+  `;
+}
+
 // HTML 转义
 function escapeHtml(text: string): string {
   const div = document.createElement('div');
@@ -91,18 +112,31 @@ function escapeHtml(text: string): string {
   return div.innerHTML;
 }
 
-// 渲染猹评列表
-function renderReviews(reviews: Review[]) {
-  reviewsList.innerHTML = reviews.map(renderReviewItem).join('');
+// 渲染数据列表
+function renderData() {
+  if (currentDataType === 'reviews') {
+    dataList.innerHTML = filteredReviews.map(renderReviewItem).join('');
+  } else {
+    dataList.innerHTML = filteredPosts.map(renderPostItem).join('');
+  }
 }
 
 // 更新统计信息
 function updateStats() {
-  totalCount.textContent = `共 ${allReviews.length} 条猹评`;
-  if (filteredReviews.length !== allReviews.length) {
-    filteredCount.textContent = `（筛选后 ${filteredReviews.length} 条）`;
+  if (currentDataType === 'reviews') {
+    totalCount.textContent = `共 ${allReviews.length} 条猹评`;
+    if (filteredReviews.length !== allReviews.length) {
+      filteredCount.textContent = `（筛选后 ${filteredReviews.length} 条）`;
+    } else {
+      filteredCount.textContent = '';
+    }
   } else {
-    filteredCount.textContent = '';
+    totalCount.textContent = `共 ${allPosts.length} 条讨论`;
+    if (filteredPosts.length !== allPosts.length) {
+      filteredCount.textContent = `（筛选后 ${filteredPosts.length} 条）`;
+    } else {
+      filteredCount.textContent = '';
+    }
   }
 }
 
@@ -110,15 +144,24 @@ function updateStats() {
 function applyFilter() {
   const selectedIndex = monthFilter.value;
   
-  if (selectedIndex === '') {
-    filteredReviews = allReviews;
+  if (currentDataType === 'reviews') {
+    if (selectedIndex === '') {
+      filteredReviews = allReviews;
+    } else {
+      const opt = monthOptions[parseInt(selectedIndex)];
+      filteredReviews = filterReviewsByMonth(allReviews, opt.year, opt.month);
+    }
   } else {
-    const opt = monthOptions[parseInt(selectedIndex)];
-    filteredReviews = filterReviewsByMonth(allReviews, opt.year, opt.month);
+    if (selectedIndex === '') {
+      filteredPosts = allPosts;
+    } else {
+      const opt = monthOptions[parseInt(selectedIndex)];
+      filteredPosts = filterPostsByMonth(allPosts, opt.year, opt.month);
+    }
   }
   
   updateStats();
-  renderReviews(filteredReviews);
+  renderData();
 }
 
 // 显示结果
@@ -127,11 +170,15 @@ function showResults() {
   applyFilter();
 }
 
-// 获取猹评数据
-async function fetchReviews() {
+// 获取数据
+async function fetchData() {
   const url = urlInput.value.trim();
   
   hideError();
+  
+  // 获取选中的数据类型
+  const dataTypeRadio = document.querySelector('input[name="data-type"]:checked') as HTMLInputElement;
+  currentDataType = dataTypeRadio.value as 'reviews' | 'posts';
   
   // 解析 URL
   const parseResult = parseWatchaUrl(url);
@@ -149,13 +196,15 @@ async function fetchReviews() {
     // 获取用户信息
     const userInfo = await fetchUserInfo(username);
     
-    showLoading('正在获取猹评数据...');
-    
-    // 获取所有猹评
-    const reviewItems = await fetchAllReviews(userInfo.id, updateProgress);
-    
-    // 转换和排序
-    allReviews = sortReviewsByDate(transformReviews(reviewItems));
+    if (currentDataType === 'reviews') {
+      showLoading('正在获取猹评数据...');
+      const reviewItems = await fetchAllReviews(userInfo.id, updateProgress);
+      allReviews = sortReviewsByDate(transformReviews(reviewItems));
+    } else {
+      showLoading('正在获取讨论数据...');
+      const postItems = await fetchAllPosts(userInfo.id, updateProgress);
+      allPosts = sortPostsByDate(transformPosts(postItems));
+    }
     
     hideLoading();
     showResults();
@@ -172,20 +221,28 @@ async function fetchReviews() {
   }
 }
 
-// 导出猹评
+// 导出数据
 function handleExport() {
-  if (filteredReviews.length === 0) {
-    showError('没有可导出的数据');
-    return;
+  if (currentDataType === 'reviews') {
+    if (filteredReviews.length === 0) {
+      showError('没有可导出的数据');
+      return;
+    }
+    exportToTxt(filteredReviews);
+  } else {
+    if (filteredPosts.length === 0) {
+      showError('没有可导出的数据');
+      return;
+    }
+    exportPostsToTxt(filteredPosts);
   }
-  exportToTxt(filteredReviews);
 }
 
 // 事件绑定
-fetchBtn.addEventListener('click', fetchReviews);
+fetchBtn.addEventListener('click', fetchData);
 urlInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
-    fetchReviews();
+    fetchData();
   }
 });
 monthFilter.addEventListener('change', applyFilter);

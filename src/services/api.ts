@@ -1,4 +1,4 @@
-import type { UserInfo, ReviewItem, ReviewsResponse } from '../types';
+import type { UserInfo, ReviewItem, ReviewsResponse, PostItem, PostsResponse } from '../types';
 
 // 开发环境使用Vite代理，生产环境使用Vercel API代理
 const BASE_URL = import.meta.env.DEV ? '/api/v2' : '/api/proxy?path=';
@@ -141,6 +141,105 @@ export async function fetchAllReviews(
 
   console.log(`Final count: ${allReviews.length} reviews`);
   return allReviews;
+}
+
+// 获取讨论数据
+export async function fetchPosts(
+  userId: number,
+  skip: number = 0,
+  limit: number = PAGE_SIZE
+): Promise<PostsResponse> {
+  const path = `users/${userId}/posts?_user_id=${userId}&skip=${skip}&limit=${limit}`;
+  
+  const url = import.meta.env.DEV 
+    ? `${BASE_URL}/${path}`
+    : `${BASE_URL}${encodeURIComponent(path)}`;
+  
+  console.log(`Fetching posts URL: ${url}`);
+  
+  const response = await fetch(url, {
+    headers: {
+      'Accept': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new ApiError(`获取讨论数据失败: ${response.status}`, response.status);
+  }
+
+  const data = await response.json();
+  const postsData = data.data || data;
+  
+  if (!postsData || !Array.isArray(postsData.items)) {
+    console.error('Invalid response structure:', data);
+    throw new ApiError('响应数据格式错误');
+  }
+  
+  return postsData as PostsResponse;
+}
+
+export async function fetchAllPosts(
+  userId: number,
+  onProgress?: (loaded: number, total: number) => void
+): Promise<PostItem[]> {
+  const allPosts: PostItem[] = [];
+  const seenIds = new Set<number>();
+  let skip = 0;
+  let total = 0;
+
+  while (true) {
+    console.log(`Fetching posts: skip=${skip}, limit=${PAGE_SIZE}`);
+    const response = await fetchPosts(userId, skip, PAGE_SIZE);
+    
+    if (total === 0) {
+      total = response.total;
+      console.log(`Total posts: ${total}`);
+    }
+
+    if (!response.items || response.items.length === 0) {
+      console.log('No more posts, breaking');
+      break;
+    }
+
+    console.log(`Received ${response.items.length} posts`);
+
+    let addedCount = 0;
+    for (const item of response.items) {
+      if (!seenIds.has(item.id)) {
+        seenIds.add(item.id);
+        allPosts.push(item);
+        addedCount++;
+      } else {
+        console.warn(`Duplicate post found: ${item.id}`);
+      }
+    }
+    
+    console.log(`Added ${addedCount} new posts, total now: ${allPosts.length}`);
+    
+    if (onProgress) {
+      onProgress(allPosts.length, total);
+    }
+
+    if (response.items.length < PAGE_SIZE) {
+      console.log(`Received ${response.items.length} < ${PAGE_SIZE}, last page reached`);
+      break;
+    }
+
+    if (allPosts.length >= total) {
+      console.log(`Collected ${allPosts.length} >= ${total}, all data fetched`);
+      break;
+    }
+
+    skip += PAGE_SIZE;
+    
+    if (skip > total + PAGE_SIZE) {
+      console.warn('Pagination safety check triggered');
+      break;
+    }
+  }
+
+  console.log(`Final count: ${allPosts.length} posts`);
+  return allPosts;
 }
 
 // 用于测试的分页逻辑判断函数
