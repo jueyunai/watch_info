@@ -57,7 +57,16 @@ export async function fetchReviews(
   }
 
   const data = await response.json();
-  return data.data as ReviewsResponse;
+  
+  // 生产环境的API代理已经返回了完整的响应，需要提取data字段
+  const reviewsData = data.data || data;
+  
+  if (!reviewsData || !Array.isArray(reviewsData.items)) {
+    console.error('Invalid response structure:', data);
+    throw new ApiError('响应数据格式错误');
+  }
+  
+  return reviewsData as ReviewsResponse;
 }
 
 export async function fetchAllReviews(
@@ -75,6 +84,11 @@ export async function fetchAllReviews(
       total = response.total;
     }
 
+    // 如果没有返回任何数据，退出循环
+    if (!response.items || response.items.length === 0) {
+      break;
+    }
+
     allReviews.push(...response.items);
     
     if (onProgress) {
@@ -86,7 +100,18 @@ export async function fetchAllReviews(
       break;
     }
 
+    // 如果已经获取了所有数据，退出循环
+    if (allReviews.length >= total) {
+      break;
+    }
+
     skip += PAGE_SIZE;
+    
+    // 安全检查：防止无限循环
+    if (skip > total + PAGE_SIZE) {
+      console.warn('Pagination safety check triggered');
+      break;
+    }
   }
 
   return allReviews;
