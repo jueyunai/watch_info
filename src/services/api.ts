@@ -81,16 +81,14 @@ export async function fetchAllReviews(
   const allReviews: ReviewItem[] = [];
   const seenIds = new Set<number>();
   let skip = 0;
-  let total = 0;
+  // API的total字段可能返回0，不再依赖它判断分页结束
+  // 改用 items.length < PAGE_SIZE 作为主要判断条件
+  const MAX_PAGES = 100; // 安全限制，防止无限循环
+  let pageCount = 0;
 
-  while (true) {
-    console.log(`Fetching reviews: skip=${skip}, limit=${PAGE_SIZE}`);
+  while (pageCount < MAX_PAGES) {
+    console.log(`Fetching reviews: skip=${skip}, limit=${PAGE_SIZE}, page=${pageCount + 1}`);
     const response = await fetchReviews(userId, skip, PAGE_SIZE);
-    
-    if (total === 0) {
-      total = response.total;
-      console.log(`Total reviews: ${total}`);
-    }
 
     // 如果没有返回任何数据，退出循环
     if (!response.items || response.items.length === 0) {
@@ -115,7 +113,8 @@ export async function fetchAllReviews(
     console.log(`Added ${addedCount} new items, total now: ${allReviews.length}`);
     
     if (onProgress) {
-      onProgress(allReviews.length, total);
+      // 由于total不可靠，使用已加载数量作为进度指示
+      onProgress(allReviews.length, response.total > 0 ? response.total : allReviews.length);
     }
 
     // 如果返回的数量小于请求的数量，说明已经没有更多数据
@@ -124,19 +123,12 @@ export async function fetchAllReviews(
       break;
     }
 
-    // 如果已经获取了所有数据，退出循环
-    if (allReviews.length >= total) {
-      console.log(`Collected ${allReviews.length} >= ${total}, all data fetched`);
-      break;
-    }
-
     skip += PAGE_SIZE;
-    
-    // 安全检查：防止无限循环
-    if (skip > total + PAGE_SIZE) {
-      console.warn('Pagination safety check triggered');
-      break;
-    }
+    pageCount++;
+  }
+
+  if (pageCount >= MAX_PAGES) {
+    console.warn('Max pages limit reached');
   }
 
   console.log(`Final count: ${allReviews.length} reviews`);
@@ -185,16 +177,12 @@ export async function fetchAllPosts(
   const allPosts: PostItem[] = [];
   const seenIds = new Set<number>();
   let skip = 0;
-  let total = 0;
+  const MAX_PAGES = 100;
+  let pageCount = 0;
 
-  while (true) {
-    console.log(`Fetching posts: skip=${skip}, limit=${PAGE_SIZE}`);
+  while (pageCount < MAX_PAGES) {
+    console.log(`Fetching posts: skip=${skip}, limit=${PAGE_SIZE}, page=${pageCount + 1}`);
     const response = await fetchPosts(userId, skip, PAGE_SIZE);
-    
-    if (total === 0) {
-      total = response.total;
-      console.log(`Total posts: ${total}`);
-    }
 
     if (!response.items || response.items.length === 0) {
       console.log('No more posts, breaking');
@@ -217,7 +205,7 @@ export async function fetchAllPosts(
     console.log(`Added ${addedCount} new posts, total now: ${allPosts.length}`);
     
     if (onProgress) {
-      onProgress(allPosts.length, total);
+      onProgress(allPosts.length, response.total > 0 ? response.total : allPosts.length);
     }
 
     if (response.items.length < PAGE_SIZE) {
@@ -225,17 +213,12 @@ export async function fetchAllPosts(
       break;
     }
 
-    if (allPosts.length >= total) {
-      console.log(`Collected ${allPosts.length} >= ${total}, all data fetched`);
-      break;
-    }
-
     skip += PAGE_SIZE;
-    
-    if (skip > total + PAGE_SIZE) {
-      console.warn('Pagination safety check triggered');
-      break;
-    }
+    pageCount++;
+  }
+
+  if (pageCount >= MAX_PAGES) {
+    console.warn('Max pages limit reached');
   }
 
   console.log(`Final count: ${allPosts.length} posts`);
