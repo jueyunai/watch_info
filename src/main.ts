@@ -28,11 +28,54 @@ const copySuccess = document.getElementById('copy-success') as HTMLSpanElement;
 
 // 应用状态
 let currentDataType: 'reviews' | 'posts' = 'reviews';
+let currentUsername: string = '';
 let allReviews: Review[] = [];
 let filteredReviews: Review[] = [];
 let allPosts: Post[] = [];
 let filteredPosts: Post[] = [];
 let monthOptions: MonthOption[] = [];
+
+// 缓存相关
+const CACHE_PREFIX = 'watcha_cache_';
+
+function getCacheKey(username: string, type: 'reviews' | 'posts'): string {
+  return `${CACHE_PREFIX}${username}_${type}`;
+}
+
+function saveToCache(username: string, type: 'reviews' | 'posts', data: Review[] | Post[]) {
+  const key = getCacheKey(username, type);
+  localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+}
+
+function loadFromCache(username: string, type: 'reviews' | 'posts'): Review[] | Post[] | null {
+  const key = getCacheKey(username, type);
+  const cached = localStorage.getItem(key);
+  if (cached) {
+    try {
+      const { data } = JSON.parse(cached);
+      return data;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function hasCache(username: string, type: 'reviews' | 'posts'): boolean {
+  return localStorage.getItem(getCacheKey(username, type)) !== null;
+}
+
+function updateFetchBtnText() {
+  const url = urlInput.value.trim();
+  const parseResult = parseWatchaUrl(url);
+  if (parseResult.success && parseResult.username) {
+    const dataTypeRadio = document.querySelector('input[name="data-type"]:checked') as HTMLInputElement;
+    const type = dataTypeRadio.value as 'reviews' | 'posts';
+    fetchBtn.textContent = hasCache(parseResult.username, type) ? '更新数据' : '获取数据';
+  } else {
+    fetchBtn.textContent = '获取数据';
+  }
+}
 
 // 初始化月份筛选选项
 function initMonthFilter() {
@@ -194,6 +237,7 @@ async function fetchData() {
   }
   
   const username = parseResult.username!;
+  currentUsername = username;
   
   try {
     fetchBtn.disabled = true;
@@ -206,14 +250,17 @@ async function fetchData() {
       showLoading('正在获取猹评数据...');
       const reviewItems = await fetchAllReviews(userInfo.id, updateProgress);
       allReviews = sortReviewsByDate(transformReviews(reviewItems));
+      saveToCache(username, 'reviews', allReviews);
     } else {
       showLoading('正在获取讨论数据...');
       const postItems = await fetchAllPosts(userInfo.id, updateProgress);
       allPosts = sortPostsByDate(transformPosts(postItems));
+      saveToCache(username, 'posts', allPosts);
     }
     
     hideLoading();
     showResults();
+    updateFetchBtnText();
     
   } catch (error) {
     hideLoading();
@@ -224,6 +271,36 @@ async function fetchData() {
     }
   } finally {
     fetchBtn.disabled = false;
+  }
+}
+
+// 切换数据类型时加载缓存
+function handleDataTypeChange() {
+  const dataTypeRadio = document.querySelector('input[name="data-type"]:checked') as HTMLInputElement;
+  currentDataType = dataTypeRadio.value as 'reviews' | 'posts';
+  
+  updateFetchBtnText();
+  
+  // 尝试从URL获取用户名
+  const url = urlInput.value.trim();
+  const parseResult = parseWatchaUrl(url);
+  if (!parseResult.success || !parseResult.username) return;
+  
+  const username = parseResult.username;
+  currentUsername = username;
+  
+  // 尝试加载缓存
+  const cached = loadFromCache(username, currentDataType);
+  if (cached) {
+    if (currentDataType === 'reviews') {
+      allReviews = cached as Review[];
+    } else {
+      allPosts = cached as Post[];
+    }
+    showResults();
+  } else {
+    // 无缓存时隐藏结果区
+    resultSection.classList.add('hidden');
   }
 }
 
@@ -334,8 +411,14 @@ urlInput.addEventListener('keypress', (e) => {
     fetchData();
   }
 });
+urlInput.addEventListener('input', updateFetchBtnText);
 monthFilter.addEventListener('change', applyFilter);
 exportBtn.addEventListener('click', handleExport);
+
+// 数据类型切换
+document.querySelectorAll('input[name="data-type"]').forEach(radio => {
+  radio.addEventListener('change', handleDataTypeChange);
+});
 promptBtn.addEventListener('click', showPromptModal);
 closeModal.addEventListener('click', hidePromptModal);
 copyPromptBtn.addEventListener('click', copyPromptToClipboard);
