@@ -28,7 +28,6 @@ const copySuccess = document.getElementById('copy-success') as HTMLSpanElement;
 
 // 应用状态
 let currentDataType: 'reviews' | 'posts' = 'reviews';
-let currentUsername: string = '';
 let allReviews: Review[] = [];
 let filteredReviews: Review[] = [];
 let allPosts: Post[] = [];
@@ -237,7 +236,6 @@ async function fetchData() {
   }
   
   const username = parseResult.username!;
-  currentUsername = username;
   
   try {
     fetchBtn.disabled = true;
@@ -287,7 +285,6 @@ function handleDataTypeChange() {
   if (!parseResult.success || !parseResult.username) return;
   
   const username = parseResult.username;
-  currentUsername = username;
   
   // 尝试加载缓存
   const cached = loadFromCache(username, currentDataType);
