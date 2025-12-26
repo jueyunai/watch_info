@@ -1,93 +1,97 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>猹评导出工具</title>
-  </head>
-  <body>
-    <div id="app">
-      <header>
-        <h1>🦔 猹评导出工具</h1>
-        <p class="subtitle">从观猹平台导出你的所有猹评和讨论数据</p>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>猹评导出工具</title>
+</head>
+
+<body>
+  <div id="app">
+    <header>
+      <h1>🦔 猹评导出工具</h1>
+      <p class="subtitle">从观猹平台导出你的所有猹评和讨论数据</p>
+      <div class="header-actions">
+        <!-- TODO: 年度报告功能开发中，完善后取消注释启用入口
+        <a href="/annual.html" class="annual-btn">🎊 2025年度报告</a>
+        -->
         <button id="prompt-btn" class="secondary-btn">📝 月报配方</button>
-      </header>
+      </div>
+    </header>
 
-      <main>
-        <section class="input-section">
-          <div class="input-group">
-            <label for="url-input">个人主页地址</label>
-            <input 
-              type="text" 
-              id="url-input" 
-              placeholder="https://watcha.cn/@用户名"
-            />
+    <main>
+      <section class="input-section">
+        <div class="input-group">
+          <label for="url-input">个人主页地址</label>
+          <input type="text" id="url-input" placeholder="https://watcha.cn/@用户名" />
+        </div>
+        <div class="type-selector">
+          <label>数据类型：</label>
+          <label class="radio-label">
+            <input type="radio" name="data-type" value="reviews" checked />
+            猹评
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="data-type" value="posts" />
+            讨论
+          </label>
+        </div>
+        <button id="fetch-btn">获取数据</button>
+        <p id="error-msg" class="error hidden"></p>
+      </section>
+
+      <section id="loading-section" class="loading-section hidden">
+        <div class="spinner"></div>
+        <p id="loading-text">正在获取数据...</p>
+        <p id="progress-text"></p>
+      </section>
+
+      <section id="result-section" class="result-section hidden">
+        <div class="result-header">
+          <div class="stats">
+            <span id="total-count">共 0 条数据</span>
+            <span id="filtered-count"></span>
           </div>
-          <div class="type-selector">
-            <label>数据类型：</label>
-            <label class="radio-label">
-              <input type="radio" name="data-type" value="reviews" checked />
-              猹评
-            </label>
-            <label class="radio-label">
-              <input type="radio" name="data-type" value="posts" />
-              讨论
-            </label>
-          </div>
-          <button id="fetch-btn">获取数据</button>
-          <p id="error-msg" class="error hidden"></p>
-        </section>
-
-        <section id="loading-section" class="loading-section hidden">
-          <div class="spinner"></div>
-          <p id="loading-text">正在获取数据...</p>
-          <p id="progress-text"></p>
-        </section>
-
-        <section id="result-section" class="result-section hidden">
-          <div class="result-header">
-            <div class="stats">
-              <span id="total-count">共 0 条数据</span>
-              <span id="filtered-count"></span>
+          <div class="actions">
+            <div class="filter-group">
+              <label>时间筛选：</label>
+              <select id="month-filter">
+                <option value="">全部</option>
+              </select>
             </div>
-            <div class="actions">
-              <div class="filter-group">
-                <label>时间筛选：</label>
-                <select id="month-filter">
-                  <option value="">全部</option>
-                </select>
-              </div>
-              <button id="export-btn">导出 TXT</button>
-            </div>
+            <button id="export-btn">导出 TXT</button>
           </div>
-
-          <div id="data-list" class="data-list"></div>
-        </section>
-      </main>
-
-      <footer>
-        <p>数据来源：<a href="https://watcha.cn" target="_blank">观猹 watcha.cn</a></p>
-      </footer>
-    </div>
-
-    <!-- 月报配方弹窗 -->
-    <div id="prompt-modal" class="modal hidden">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>📝 观猹AI洞察月报配方</h2>
-          <button id="close-modal" class="close-btn">&times;</button>
         </div>
-        <div class="modal-body">
-          <pre id="prompt-text" class="prompt-text"></pre>
-        </div>
-        <div class="modal-footer">
-          <button id="copy-prompt-btn" class="primary-btn">📋 复制到剪贴板</button>
-          <span id="copy-success" class="copy-success hidden">✓ 已复制</span>
-        </div>
+
+        <div id="data-list" class="data-list"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>数据来源：<a href="https://watcha.cn" target="_blank">观猹 watcha.cn</a></p>
+    </footer>
+  </div>
+
+  <!-- 月报配方弹窗 -->
+  <div id="prompt-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📝 观猹AI洞察月报配方</h2>
+        <button id="close-modal" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <pre id="prompt-text" class="prompt-text"></pre>
+      </div>
+      <div class="modal-footer">
+        <button id="copy-prompt-btn" class="primary-btn">📋 复制到剪贴板</button>
+        <span id="copy-success" class="copy-success hidden">✓ 已复制</span>
       </div>
     </div>
+  </div>
 
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>

@@ -60,6 +60,32 @@ header h1 {
   color: white;
 }
 
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.annual-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #3AAF78 0%, #2D8B5E 100%);
+  color: white;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.annual-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(58, 175, 120, 0.3);
+}
+
 .input-section {
   background: var(--card-bg);
   padding: 1.5rem;
@@ -147,7 +173,9 @@ button:disabled {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 #loading-text {
@@ -249,33 +277,39 @@ button:disabled {
   overflow-y: auto;
 }
 
-.review-item, .post-item {
+.review-item,
+.post-item {
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border);
 }
 
-.review-item:last-child, .post-item:last-child {
+.review-item:last-child,
+.post-item:last-child {
   border-bottom: none;
 }
 
-.review-header, .post-header {
+.review-header,
+.post-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.75rem;
 }
 
-.product-name, .post-title {
+.product-name,
+.post-title {
   font-weight: 600;
   color: var(--primary-dark);
 }
 
-.review-time, .post-time {
+.review-time,
+.post-time {
   font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
-.review-content, .post-content {
+.review-content,
+.post-content {
   color: var(--text);
   white-space: pre-wrap;
   word-break: break-word;
@@ -414,12 +448,12 @@ footer a:hover {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .result-header {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .actions {
     width: 100%;
     justify-content: space-between;

@@ -1,0 +1,561 @@
+/* 年度报告专属样式 */
+
+:root {
+  /* 观猹品牌色 */
+  --watcha-primary: #3AAF78;
+  --watcha-primary-dark: #2D8B5E;
+  
+  /* 年报暗色主题 */
+  --annual-bg: #0F1419;
+  --annual-card: #1E2A35;
+  --annual-card-light: #253341;
+  --annual-text: #FFFFFF;
+  --annual-text-secondary: #A0AEC0;
+  --annual-accent: #FFD700;
+  --annual-border: #2D3E50;
+  
+  /* 渐变 */
+  --gradient-primary: linear-gradient(135deg, #3AAF78 0%, #2D8B5E 100%);
+  --gradient-gold: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif;
+  background: var(--annual-bg);
+  color: var(--annual-text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.page {
+  min-height: 100vh;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ===== 入口页面 ===== */
+.annual-header {
+  text-align: center;
+  padding: 3rem 1rem 2rem;
+}
+
+.annual-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.slogan {
+  font-size: 1.125rem;
+  color: var(--annual-text-secondary);
+  font-style: italic;
+}
+
+.entry-main {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.input-section {
+  background: var(--annual-card);
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid var(--annual-border);
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--annual-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--annual-border);
+  border-radius: 10px;
+  font-size: 1rem;
+  background: var(--annual-bg);
+  color: var(--annual-text);
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--watcha-primary);
+}
+
+.input-group input::placeholder {
+  color: var(--annual-text-secondary);
+  opacity: 0.6;
+}
+
+.primary-btn {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(58, 175, 120, 0.3);
+}
+
+.primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.secondary-btn {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: var(--watcha-primary);
+  border: 2px solid var(--watcha-primary);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.secondary-btn:hover {
+  background: var(--watcha-primary);
+  color: white;
+}
+
+.error {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* 加载状态 */
+.loading-section {
+  text-align: center;
+  padding: 3rem;
+  background: var(--annual-card);
+  border-radius: 16px;
+  margin-top: 1.5rem;
+  border: 1px solid var(--annual-border);
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--annual-border);
+  border-top-color: var(--watcha-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+#loading-text {
+  font-weight: 500;
+  font-size: 1.125rem;
+}
+
+#progress-text {
+  color: var(--annual-text-secondary);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+/* 页脚 */
+footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--annual-text-secondary);
+  font-size: 0.875rem;
+}
+
+footer a {
+  color: var(--watcha-primary);
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
+/* ===== 报告页面 ===== */
+.report-container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.report-section {
+  margin-bottom: 1.5rem;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* 封面 */
+.cover-section {
+  position: relative;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-primary);
+  padding: 3rem 2rem;
+}
+
+.cover-bg {
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.cover-content {
+  position: relative;
+  text-align: center;
+  z-index: 1;
+}
+
+.cover-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  letter-spacing: 2px;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.cover-slogan {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+}
+
+.user-info {
+  margin-bottom: 1.5rem;
+}
+
+.nickname {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.labels-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.label-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  font-size: 0.875rem;
+  backdrop-filter: blur(10px);
+}
+
+/* 数据概览 */
+.data-section {
+  background: var(--annual-card);
+  padding: 2rem;
+  border: 1px solid var(--annual-border);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.stat-card {
+  background: var(--annual-card-light);
+  padding: 1.5rem 1rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid var(--annual-border);
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--watcha-primary);
+  display: block;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--annual-text-secondary);
+}
+
+/* 月度图表 */
+.chart-section {
+  background: var(--annual-card);
+  padding: 2rem;
+  border: 1px solid var(--annual-border);
+}
+
+.monthly-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 200px;
+  padding: 1rem 0;
+  gap: 0.5rem;
+}
+
+.chart-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bar {
+  width: 100%;
+  max-width: 50px;
+  background: var(--gradient-primary);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.5s ease;
+  min-height: 4px;
+}
+
+.bar-label {
+  font-size: 0.75rem;
+  color: var(--annual-text-secondary);
+}
+
+/* 尾声 */
+.footer-section {
+  background: var(--annual-card);
+  padding: 3rem 2rem;
+  text-align: center;
+  border: 1px solid var(--annual-border);
+}
+
+.thanks-text {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.year-text {
+  font-size: 1.125rem;
+  color: var(--annual-text-secondary);
+  margin-bottom: 2rem;
+}
+
+.qr-hint {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--annual-border);
+}
+
+.qr-hint p {
+  font-size: 0.875rem;
+  color: var(--annual-text-secondary);
+}
+
+.qr-url {
+  color: var(--watcha-primary);
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+/* 操作按钮 */
+.report-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  padding: 2rem 1rem;
+  flex-wrap: wrap;
+}
+
+.report-actions .primary-btn,
+.report-actions .secondary-btn {
+  width: auto;
+  min-width: 150px;
+}
+
+/* ===== 弹窗 ===== */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: var(--annual-card);
+  border-radius: 16px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--annual-border);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--annual-border);
+}
+
+.modal-header h2 {
+  font-size: 1.25rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--annual-text-secondary);
+  cursor: pointer;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: var(--annual-text);
+  background: none;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.modal-hint {
+  color: var(--annual-text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.prompt-text {
+  background: var(--annual-bg);
+  padding: 1.5rem;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: var(--annual-text);
+  margin: 0;
+  border: 1px solid var(--annual-border);
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--annual-border);
+}
+
+.modal-footer .primary-btn {
+  width: auto;
+}
+
+.copy-success {
+  color: var(--watcha-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 640px) {
+  .annual-header h1 {
+    font-size: 1.75rem;
+  }
+  
+  .cover-title {
+    font-size: 2rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
+  }
+  
+  .monthly-chart {
+    height: 150px;
+  }
+  
+  .bar-label {
+    font-size: 0.625rem;
+  }
+  
+  .report-actions {
+    flex-direction: column;
+  }
+  
+  .report-actions .primary-btn,
+  .report-actions .secondary-btn {
+    width: 100%;
+  }
+}
