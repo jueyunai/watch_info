@@ -26,7 +26,7 @@ function summarizeReview(review: Review): ReviewSummary {
   return {
     date: review.rawUpdateAt?.split('T')[0] || '',
     product: review.productName || '未知产品',
-    excerpt: content.length > 200 ? content.slice(0, 200) + '...' : content,
+    excerpt: content,  // 完整内容
   };
 }
 
@@ -36,7 +36,7 @@ function summarizePost(post: Post): PostSummary {
   return {
     date: post.rawUpdateAt?.split('T')[0] || '',
     title: post.title || '',
-    excerpt: content.length > 200 ? content.slice(0, 200) + '...' : content,
+    excerpt: content,  // 完整内容
   };
 }
 
@@ -132,7 +132,9 @@ export const ANNUAL_SYSTEM_PROMPT = `你是「年度认知审计师」，擅长�
 ## 风格要求
 - 简洁有力，拒绝流水账
 - 有洞察深度，不是数据复述
-- 语言稍带仪式感，这是年度报告`;
+- 语言稍带仪式感，这是年度报告
+- 所有引号必须使用中文双引号“”，禁止使用英文引号
+- 禁止使用破折号（——），用逗号或句号代替`;
 
 export const ANNUAL_USER_PROMPT = (data: string) => `请基于以下数据生成年度洞察报告：
 

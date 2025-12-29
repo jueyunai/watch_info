@@ -6,6 +6,8 @@ import { transformReviews, sortReviewsByDate, transformPosts, sortPostsByDate } 
 import { analyzeAnnualData, generateLabels, formatWordCount, getMonthName } from './utils/annualAnalyzer';
 import { generateLLMInput, ANNUAL_SYSTEM_PROMPT, ANNUAL_USER_PROMPT } from './utils/dataSummarizer';
 import { mockAiContent } from './mock/aiResponse';
+import { chat } from './services/llm';
+import { getProviderPriority } from './config/llm';
 import type { AnnualStats, AchievementLabel } from './types/annual';
 import type { Review, Post } from './types';
 
@@ -40,6 +42,7 @@ const generateAiBtn = document.getElementById('generate-ai-btn') as HTMLButtonEl
 
 // DOM 元素 - AI 洞察
 const aiLoading = document.getElementById('ai-loading') as HTMLDivElement;
+const aiLoadingText = document.getElementById('ai-loading-text') as HTMLParagraphElement;
 const aiContent = document.getElementById('ai-content') as HTMLDivElement;
 const aiSection = document.getElementById('ai-insight-container')?.closest('.ai-section') as HTMLElement | null;
 
@@ -65,6 +68,36 @@ let currentStats: AnnualStats | null = null;
 let currentReviews: Review[] = [];
 let currentPosts: Post[] = [];
 let posterDataUrl = '';
+let currentProviderIndex = 0; // 当前使用的模型索引
+
+// 数据缓存函数
+function getDataCacheKey(username: string) {
+    return `watcha-annual-data-${username}`;
+}
+
+function cacheUserData(username: string, data: { reviews: Review[]; posts: Post[] }) {
+    try {
+        localStorage.setItem(getDataCacheKey(username), JSON.stringify(data));
+    } catch { /* ignore */ }
+}
+
+function loadCachedUserData(username: string): { reviews: Review[]; posts: Post[] } | null {
+    try {
+        const cached = localStorage.getItem(getDataCacheKey(username));
+        if (!cached) return null;
+        const data = JSON.parse(cached);
+        // 恢复 Date 对象
+        data.reviews = data.reviews.map((r: Review) => ({
+            ...r,
+            updateAt: new Date(r.updateAt),
+        }));
+        data.posts = data.posts.map((p: Post) => ({
+            ...p,
+            updateAt: new Date(p.updateAt),
+        }));
+        return data;
+    } catch { return null; }
+}
 
 
 // 年报配方提示词
@@ -170,17 +203,20 @@ function renderLabels(labels: AchievementLabel[]) {
 // 渲染月度图表
 function renderMonthlyChart(stats: AnnualStats) {
     const monthlyTotal = stats.monthlyReviews.map((r, i) => r + stats.monthlyPosts[i]);
-    const maxValue = Math.max(...monthlyTotal, 1);
+    const maxValue = Math.max(...monthlyTotal);
+    const safeMax = Math.max(maxValue, 1);
+    const maxIndex = maxValue > 0 ? monthlyTotal.indexOf(maxValue) : -1;
 
     const months = ['1月', '2月', '3月', '4月', '5月', '6月',
         '7月', '8月', '9月', '10月', '11月', '12月'];
 
     monthlyChart.innerHTML = months.map((month, index) => {
         const value = monthlyTotal[index];
-        const height = (value / maxValue) * 150;
+        const height = (value / safeMax) * 150;
+        const barClass = index === maxIndex ? 'bar bar-peak' : 'bar';
         return `
       <div class="chart-bar">
-        <div class="bar" style="height: ${height}px;" title="${value}条"></div>
+        <div class="${barClass}" style="height: ${height}px;" title="${value}条"></div>
         <span class="bar-label">${month}</span>
       </div>
     `;
@@ -217,6 +253,11 @@ function renderReport(nickname: string, stats: AnnualStats, labels: AchievementL
     generateAiBtn.classList.remove('hidden');
     generateAiBtn.disabled = false;
 
+    // 更新档案编号
+    const archiveId = document.getElementById('archive-id');
+    if (archiveId) {
+        archiveId.textContent = `WR-2025-${currentUsername}`;
+    }
 
     // 用户信息
     userNickname.textContent = nickname;
@@ -287,20 +328,35 @@ async function generateReport() {
 
     try {
         generateBtn.disabled = true;
-        showLoading('正在获取用户信息...');
+        
+        // 检查缓存
+        const cachedData = loadCachedUserData(username);
+        let allReviews: Review[];
+        let allPosts: Post[];
 
-        // 获取用户信息
+        showLoading('正在获取用户信息...');
         const userInfo = await fetchUserInfo(username);
 
-        // 获取猹评
-        showLoading('正在获取猹评数据...');
-        const reviewItems = await fetchAllReviews(userInfo.id, updateProgress);
-        const allReviews = sortReviewsByDate(transformReviews(reviewItems));
+        if (cachedData) {
+            console.log('[数据] 使用缓存数据');
+            allReviews = cachedData.reviews;
+            allPosts = cachedData.posts;
+        } else {
+            console.log('[数据] 请求 API 数据');
 
-        // 获取讨论
-        showLoading('正在获取讨论数据...');
-        const postItems = await fetchAllPosts(userInfo.id, updateProgress);
-        const allPosts = sortPostsByDate(transformPosts(postItems));
+            // 获取猹评
+            showLoading('正在获取猹评数据...');
+            const reviewItems = await fetchAllReviews(userInfo.id, updateProgress);
+            allReviews = sortReviewsByDate(transformReviews(reviewItems));
+
+            // 获取讨论
+            showLoading('正在获取讨论数据...');
+            const postItems = await fetchAllPosts(userInfo.id, updateProgress);
+            allPosts = sortPostsByDate(transformPosts(postItems));
+
+            // 缓存数据
+            cacheUserData(username, { reviews: allReviews, posts: allPosts });
+        }
 
         // 分析数据
         showLoading('正在分析年度数据...');
@@ -330,9 +386,11 @@ function getAIInsightCacheKey() {
 
 function loadCachedAIInsight() {
     const cacheKey = getAIInsightCacheKey();
+    console.log('[AI缓存] key:', cacheKey);
     if (!cacheKey) return;
     try {
         const cached = localStorage.getItem(cacheKey);
+        console.log('[AI缓存] 是否存在:', !!cached);
         if (cached) {
             aiContent.innerHTML = renderMarkdown(cached);
             generateAiBtn.classList.add('hidden');
@@ -345,11 +403,13 @@ function loadCachedAIInsight() {
 
 function cacheAIInsight(content: string) {
     const cacheKey = getAIInsightCacheKey();
+    console.log('[AI缓存] 保存, key:', cacheKey, 'content长度:', content.length);
     if (!cacheKey) return;
     try {
         localStorage.setItem(cacheKey, content);
-    } catch {
-        // Ignore storage errors.
+        console.log('[AI缓存] 保存成功');
+    } catch (e) {
+        console.error('[AI缓存] 保存失败:', e);
     }
 }
 
@@ -475,25 +535,57 @@ async function copyPromptToClipboard() {
     }
 }
 
-// 重新生成 AI 洞察
+// 重新生成 AI 洞察（切换到下一个模型）
 function refreshAIInsight() {
     clearAIInsightCache();
+    // 切换到下一个模型
+    const providers = getProviderPriority();
+    currentProviderIndex = (currentProviderIndex + 1) % providers.length;
+    console.log(`[AI] 切换模型: ${providers[currentProviderIndex]}`);
     generateAiBtn.classList.remove('hidden');
     generateAiBtn.disabled = false;
-    generateAIInsight();
+    generateAIInsight(true); // 强制刷新
 }
 
-// 生成 AI 洞察
-async function generateAIInsight() {
+// 生成 AI 洞察（forceRefresh=true 时强制重新请求）
+async function generateAIInsight(forceRefresh = false) {
     if (!currentStats || currentReviews.length === 0) {
         alert('没有可分析的数据');
         return;
     }
 
+    // 检查缓存（非强制刷新时）
+    if (!forceRefresh) {
+        const cacheKey = getAIInsightCacheKey();
+        if (cacheKey) {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                console.log('[AI] 使用缓存数据');
+                aiContent.innerHTML = renderMarkdown(cached);
+                generateAiBtn.classList.add('hidden');
+                return;
+            }
+        }
+    }
+
+    console.log('[AI] 请求 LLM API...');
     generateAiBtn.disabled = true;
     generateAiBtn.classList.add('hidden');
     aiLoading.classList.remove('hidden');
     aiContent.innerHTML = '';
+
+    // 动态更新等待文案
+    const loadingMessages = [
+        'AI 正在分析你的年度数据...',
+        '正在梳理你的认知轨迹...',
+        '正在提炼年度洞察...',
+        '快好了，再等一下...',
+    ];
+    let msgIndex = 0;
+    const loadingInterval = setInterval(() => {
+        msgIndex = (msgIndex + 1) % loadingMessages.length;
+        aiLoadingText.textContent = loadingMessages[msgIndex];
+    }, 3000);
 
     try {
         const isDev = import.meta.env.DEV;
@@ -504,43 +596,33 @@ async function generateAIInsight() {
             // 使用 mock 数据
             content = mockAiContent;
         } else if (isDev) {
-            // 开发环境：直接调用 LLM API
+            // 开发环境：使用指定模型调用
+            const providers = getProviderPriority();
+            const provider = providers[currentProviderIndex];
+            console.log(`[AI] 使用模型: ${provider}`);
+            
             const dataInput = generateLLMInput(currentNickname, currentStats, currentReviews, currentPosts, 2025);
-            const config = {
-                apiKey: import.meta.env.VITE_DEEPSEEK_API_KEY,
-                baseUrl: import.meta.env.VITE_DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1',
-                model: import.meta.env.VITE_DEEPSEEK_MODEL || 'deepseek-chat',
-            };
-
-            const response = await fetch(`${config.baseUrl}/chat/completions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${config.apiKey}`,
-                },
-                body: JSON.stringify({
-                    model: config.model,
-                    messages: [
-                        { role: 'system', content: ANNUAL_SYSTEM_PROMPT },
-                        { role: 'user', content: ANNUAL_USER_PROMPT(dataInput) },
-                    ],
-                    max_tokens: 4096,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`LLM 请求失败: ${response.status}`);
-            }
-
-            const data = await response.json();
-            content = data.choices?.[0]?.message?.content || '';
+            const response = await chat(
+                [
+                    { role: 'system', content: ANNUAL_SYSTEM_PROMPT },
+                    { role: 'user', content: ANNUAL_USER_PROMPT(dataInput) },
+                ],
+                { maxTokens: 4096 },
+                provider
+            );
+            content = response.content || response.reasoningContent || '';
         } else {
-            // 生产环境：走后端代理
+            // 生产环境：走后端代理（支持模型切换）
+            const providers = getProviderPriority();
+            const provider = providers[currentProviderIndex];
+            console.log(`[AI] 生产环境使用模型: ${provider}`);
+            
             const dataInput = generateLLMInput(currentNickname, currentStats, currentReviews, currentPosts, 2025);
             const response = await fetch('/api/llm', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    provider, // 指定使用的厂商
                     messages: [
                         { role: 'system', content: ANNUAL_SYSTEM_PROMPT },
                         { role: 'user', content: ANNUAL_USER_PROMPT(dataInput) },
@@ -554,6 +636,7 @@ async function generateAIInsight() {
             }
 
             const data = await response.json();
+            console.log(`[AI] 实际使用厂商: ${data._provider || provider}`);
             content = data.choices?.[0]?.message?.content || '';
         }
 
@@ -569,27 +652,104 @@ async function generateAIInsight() {
         generateAiBtn.classList.remove('hidden');
         generateAiBtn.disabled = false;
     } finally {
+        clearInterval(loadingInterval);
+        aiLoadingText.textContent = 'AI 正在分析你的年度数据...';
         aiLoading.classList.add('hidden');
     }
 }
 
 // 简单的 Markdown 渲染
 function renderMarkdown(text: string): string {
-    return text
-        .replace(/### (.+)/g, '<h4>$1</h4>')
-        .replace(/## (.+)/g, '<h3>$1</h3>')
-        .replace(/# (.+)/g, '<h2>$1</h2>')
+    // 移除思考过程（<think>...</think> 或类似格式）
+    text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    
+    // 统一引号：先把所有引号变成统一格式，再成对替换
+    // 第一步：所有左引号类型 → 临时标记 L，所有右引号类型 → 临时标记 R
+    // 统一引号：所有双引号类型 → 中文双引号""（奇数左引号，偶数右引号）
+    let quoteCount = 0;
+    text = text.replace(/["""""「」]/g, () => {
+        quoteCount++;
+        return quoteCount % 2 === 1 ? '"' : '"';
+    });
+    
+    const lines = text.split('\n');
+    const html: string[] = [];
+    let paragraph: string[] = [];
+    let inList = false;
+
+    const inline = (value: string) => value
+        .replace(/`([^`]+?)`/g, '<code>$1</code>')
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        .replace(/`(.+?)`/g, '<code>$1</code>')
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/\n/g, '<br>')
-        .replace(/^/, '<p>')
-        .replace(/$/, '</p>');
+        .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+    const flushParagraph = () => {
+        if (!paragraph.length) return;
+        html.push(`<p>${paragraph.join('<br>')}</p>`);
+        paragraph = [];
+    };
+
+    const closeList = () => {
+        if (!inList) return;
+        html.push('</ul>');
+        inList = false;
+    };
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) {
+            flushParagraph();
+            closeList();
+            continue;
+        }
+
+        if (/^#{1,3}\s+/.test(trimmed)) {
+            flushParagraph();
+            closeList();
+            if (trimmed.startsWith('### ')) {
+                html.push(`<h4>${inline(trimmed.slice(4))}</h4>`);
+            } else if (trimmed.startsWith('## ')) {
+                html.push(`<h3>${inline(trimmed.slice(3))}</h3>`);
+            } else {
+                html.push(`<h2>${inline(trimmed.slice(2))}</h2>`);
+            }
+            continue;
+        }
+
+        if (/^---+$/.test(trimmed)) {
+            flushParagraph();
+            closeList();
+            html.push('<hr />');
+            continue;
+        }
+
+        if (/^>\s+/.test(trimmed)) {
+            flushParagraph();
+            closeList();
+            html.push(`<blockquote>${inline(trimmed.replace(/^>\s+/, ''))}</blockquote>`);
+            continue;
+        }
+
+        if (/^[-*]\s+/.test(trimmed)) {
+            flushParagraph();
+            if (!inList) {
+                html.push('<ul>');
+                inList = true;
+            }
+            html.push(`<li>${inline(trimmed.replace(/^[-*]\s+/, ''))}</li>`);
+            continue;
+        }
+
+        paragraph.push(inline(trimmed));
+    }
+
+    flushParagraph();
+    closeList();
+    return html.join('');
 }
 
 // 事件绑定
 generateBtn.addEventListener('click', generateReport);
+
 urlInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         generateReport();
@@ -599,7 +759,7 @@ urlInput.addEventListener('keypress', (e) => {
 downloadPosterBtn.addEventListener('click', downloadPoster);
 showPromptBtn.addEventListener('click', showPromptModal);
 backBtn.addEventListener('click', refreshAIInsight);
-generateAiBtn.addEventListener('click', generateAIInsight);
+generateAiBtn.addEventListener('click', () => generateAIInsight());
 
 closeModal.addEventListener('click', hidePromptModal);
 copyPromptBtn.addEventListener('click', copyPromptToClipboard);

@@ -1,5 +1,5 @@
 // LLM 调用服务
-import { getLLMConfig, validateLLMConfig, type LLMConfig, type LLMProvider } from '../config/llm';
+import { getLLMConfig, validateLLMConfig, getProviderPriority, type LLMConfig, type LLMProvider } from '../config/llm';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -22,8 +22,22 @@ export interface ChatResponse {
   };
 }
 
-// 构建请求 URL
+// 构建请求 URL（开发环境使用代理）
 function buildUrl(config: LLMConfig): string {
+  const isDev = import.meta.env.DEV;
+  
+  if (isDev) {
+    // 开发环境：使用 Vite 代理绕过 CORS
+    const proxyMap: Record<string, string> = {
+      zhipu: '/llm-proxy/zhipu/v1/chat/completions',
+      minimax: '/llm-proxy/minimax/v1/chat/completions',
+      deepseek: '/llm-proxy/deepseek/v1/chat/completions',
+    };
+    if (proxyMap[config.provider]) {
+      return proxyMap[config.provider];
+    }
+  }
+  
   return config.baseUrl.includes('/chat/completions')
     ? config.baseUrl
     : `${config.baseUrl}/chat/completions`;
@@ -40,6 +54,9 @@ export async function chat(
   if (!validateLLMConfig(config)) {
     throw new Error(`LLM 配置无效: ${config.provider}`);
   }
+
+  console.log(`[LLM] 调用模型: ${config.provider} / ${config.model}`);
+  console.log(`[LLM] API URL: ${buildUrl(config)}`);
 
   const response = await fetch(buildUrl(config), {
     method: 'POST',
@@ -73,6 +90,29 @@ export async function chat(
       totalTokens: data.usage.total_tokens,
     } : undefined,
   };
+}
+
+// 带重试的多厂商调用
+export async function chatWithFallback(
+  messages: ChatMessage[],
+  options: ChatOptions = {},
+  providers?: LLMProvider[]
+): Promise<ChatResponse> {
+  const providerList = providers || getProviderPriority();
+  
+  for (const provider of providerList) {
+    try {
+      console.log(`[LLM] 尝试厂商: ${provider}`);
+      return await chat(messages, options, provider);
+    } catch (error) {
+      console.warn(`[LLM] ${provider} 调用失败:`, error);
+      if (provider === providerList[providerList.length - 1]) {
+        throw error;
+      }
+    }
+  }
+  
+  throw new Error('所有 LLM 厂商调用失败');
 }
 
 // 简化调用：单轮对话

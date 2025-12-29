@@ -17,6 +17,21 @@ export default defineConfig({
         changeOrigin: true,
         secure: true,
       },
+      '/llm-proxy/zhipu': {
+        target: 'https://ai.bytenote.net',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/llm-proxy\/zhipu/, ''),
+      },
+      '/llm-proxy/minimax': {
+        target: 'https://api.minimax.chat',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/llm-proxy\/minimax/, ''),
+      },
+      '/llm-proxy/deepseek': {
+        target: 'https://api.deepseek.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/llm-proxy\/deepseek/, ''),
+      },
     },
   },
 });

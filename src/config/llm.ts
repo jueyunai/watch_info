@@ -61,3 +61,12 @@ export function getLLMConfig(overrideProvider?: LLMProvider): LLMConfig {
 export function validateLLMConfig(config: LLMConfig): boolean {
   return !!(config.apiKey && config.baseUrl && config.model);
 }
+
+// 获取厂商优先级列表
+export function getProviderPriority(): LLMProvider[] {
+  const providers = import.meta.env.VITE_LLM_PROVIDERS;
+  if (providers) {
+    return providers.split(',').map((p: string) => p.trim()) as LLMProvider[];
+  }
+  return ['openai'];
+}

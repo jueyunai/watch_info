@@ -1,0 +1,369 @@
+body.annual-v9 {
+  --paper: #f6f8f7;
+  --paper-strong: #ffffff;
+  --ink: #121814;
+  --ink-soft: #5b655f;
+  --moss: #3aaf78;
+  --moss-dark: #2d8b5e;
+  --tangerine: #74d7ad;
+  --gold: #d7f1e6;
+  --line: #e3e8e6;
+  --shadow: 0 22px 60px rgba(18, 24, 20, 0.18);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'PingFangSC-Regular', 'PingFang SC', 'Helvetica Neue', sans-serif;
+}
+
+body.annual-v9::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(58, 175, 120, 0.16), transparent 45%),
+    radial-gradient(circle at 82% 20%, rgba(116, 215, 173, 0.18), transparent 42%),
+    radial-gradient(circle at 50% 85%, rgba(215, 241, 230, 0.22), transparent 50%),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.92), rgba(246, 248, 247, 0.82));
+  z-index: -2;
+}
+
+body.annual-v9::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(18, 24, 20, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 24, 20, 0.05) 1px, transparent 1px);
+  background-size: 54px 54px;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: -1;
+}
+
+body.annual-v9 .page-noise {
+  opacity: 0.18;
+}
+
+body.annual-v9 .brand-year,
+body.annual-v9 .hero-eyebrow,
+body.annual-v9 .hero-title,
+body.annual-v9 .section-kicker,
+body.annual-v9 .section-title,
+body.annual-v9 .cover-kicker,
+body.annual-v9 .cover-title,
+body.annual-v9 .cover-stamp,
+body.annual-v9 .stat-value,
+body.annual-v9 .report-marquee,
+body.annual-v9 .thanks-text,
+body.annual-v9 .qr-url,
+body.annual-v9 .modal-header h2 {
+  font-family: 'Bebas Neue', 'PingFangSC-Regular', 'PingFang SC', sans-serif;
+  letter-spacing: 0.08em;
+}
+
+body.annual-v9 .brand-chip,
+body.annual-v9 .input-footer,
+body.annual-v9 .prompt-text,
+body.annual-v9 .ai-content code,
+body.annual-v9 .chart-legend,
+body.annual-v9 .bar-label {
+  font-family: 'PingFangSC-Regular', 'PingFang SC', sans-serif;
+}
+
+body.annual-v9 .brand-sigil {
+  width: 96px;
+  height: 96px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  line-height: 1;
+}
+
+body.annual-v9 .brand-sigil img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+body.annual-v9 .hero-panel,
+body.annual-v9 .input-section,
+body.annual-v9 .loading-section,
+body.annual-v9 .report-container,
+body.annual-v9 .chart-section,
+body.annual-v9 .ai-section,
+body.annual-v9 .footer-section,
+body.annual-v9 .chart-shell,
+body.annual-v9 .finale-qr {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+body.annual-v9 .hero-panel {
+  border: 1px solid rgba(18, 24, 20, 0.14);
+  box-shadow: 0 24px 55px rgba(18, 24, 20, 0.14);
+}
+
+body.annual-v9 .hero-panel::before {
+  background: linear-gradient(120deg, rgba(58, 175, 120, 0.2), transparent 58%);
+}
+
+body.annual-v9 .hero-card {
+  border: 1px solid rgba(18, 24, 20, 0.12);
+  background: linear-gradient(180deg, #ffffff 0%, #eff6f2 100%);
+  box-shadow: 0 12px 25px rgba(18, 24, 20, 0.12);
+}
+
+body.annual-v9 .hero-card-label {
+  letter-spacing: 0.18em;
+}
+
+body.annual-v9 .input-group input {
+  border: 1px solid var(--line);
+  background: #ffffff;
+}
+
+body.annual-v9 .input-group input:focus {
+  border-color: var(--moss);
+  box-shadow: 0 0 0 3px rgba(58, 175, 120, 0.18);
+}
+
+body.annual-v9 .primary-btn {
+  background: linear-gradient(135deg, var(--moss), var(--moss-dark));
+  box-shadow: 0 16px 28px rgba(58, 175, 120, 0.3);
+}
+
+body.annual-v9 .secondary-btn {
+  border: 1px solid rgba(18, 24, 20, 0.2);
+  color: var(--ink);
+  background: #ffffff;
+}
+
+body.annual-v9 .secondary-btn:hover {
+  background: rgba(18, 24, 20, 0.92);
+  color: #ffffff;
+}
+
+body.annual-v9 .report-marquee {
+  color: rgba(18, 24, 20, 0.5);
+}
+
+body.annual-v9 .cover-section {
+  background: linear-gradient(135deg, #1f3e31 0%, #2d8b5e 55%, #4fb686 100%);
+  border: 1px solid rgba(18, 24, 20, 0.22);
+  box-shadow: 0 26px 60px rgba(18, 24, 20, 0.35);
+}
+
+body.annual-v9 .cover-section::after {
+  background: radial-gradient(circle at 20% 20%, rgba(116, 215, 173, 0.35), transparent 55%);
+  opacity: 0.8;
+}
+
+body.annual-v9 .cover-meta {
+  border: 1px dashed rgba(255, 255, 255, 0.6);
+  background: rgba(18, 24, 20, 0.32);
+  color: rgba(255, 255, 255, 0.88);
+}
+
+body.annual-v9 .label-badge {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #f6fff9;
+}
+
+body.annual-v9 .cover-stamp {
+  color: rgba(255, 255, 255, 0.12);
+  text-shadow: 0 0 0 rgba(255, 255, 255, 0.4);
+  top: auto;
+  bottom: -1rem;
+  right: 2rem;
+}
+
+body.annual-v9 .mascot-sticker {
+  position: absolute;
+  right: 2.2rem;
+  top: 2.1rem;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: rgba(18, 24, 20, 0.85);
+  color: #eaf4ff;
+  font-size: 1.6rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-6deg);
+  box-shadow: 0 16px 30px rgba(18, 24, 20, 0.35);
+}
+
+body.annual-v9 .mascot-badge-img {
+  position: absolute;
+  right: 1.7rem;
+  top: 1.4rem;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 22px rgba(18, 24, 20, 0.25));
+  z-index: 10;
+}
+
+body.annual-v9 .section-header {
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
+}
+
+body.annual-v9 .section-kicker {
+  display: inline-flex;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(58, 175, 120, 0.16);
+  color: var(--moss);
+}
+
+body.annual-v9 .stat-card {
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #ffffff 0%, #eff6f2 100%);
+  box-shadow: 0 16px 30px rgba(18, 24, 20, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+body.annual-v9 .stat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--moss), var(--tangerine));
+  opacity: 0.9;
+}
+
+body.annual-v9 .stat-value {
+  color: var(--moss);
+}
+
+body.annual-v9 .chart-section {
+  background: linear-gradient(180deg, #ffffff 0%, #eff6f2 100%);
+}
+
+body.annual-v9 .chart-shell {
+  border: 1px dashed rgba(18, 24, 20, 0.18);
+  background: #ffffff;
+}
+
+body.annual-v9 .bar {
+  background: linear-gradient(180deg, var(--moss), #9be2c2);
+  box-shadow: 0 10px 18px rgba(58, 175, 120, 0.3);
+  position: relative;
+}
+
+body.annual-v9 .bar-peak {
+  background: linear-gradient(180deg, #5bd19a, #d7f1e6);
+  box-shadow: 0 12px 24px rgba(58, 175, 120, 0.45);
+}
+
+body.annual-v9 .bar-peak::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--tangerine);
+  box-shadow: 0 0 0 6px rgba(116, 215, 173, 0.25);
+}
+
+body.annual-v9 .legend-dot {
+  background: var(--moss);
+}
+
+body.annual-v9 .ai-section {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+body.annual-v9 .ai-content h2,
+body.annual-v9 .ai-content h3,
+body.annual-v9 .ai-content h4 {
+  color: var(--moss-dark);
+}
+
+body.annual-v9 .ai-content strong {
+  color: var(--tangerine);
+}
+
+body.annual-v9 .modal {
+  background: rgba(18, 24, 20, 0.55);
+}
+
+body.annual-v9 .modal-content {
+  border: 1px solid var(--line);
+}
+
+body.annual-v9 .qr-url {
+  color: var(--moss);
+}
+
+body.annual-v9.poster-mode {
+  background: radial-gradient(circle at 20% 10%, rgba(58, 175, 120, 0.2), transparent 45%),
+    radial-gradient(circle at 85% 20%, rgba(116, 215, 173, 0.18), transparent 45%),
+    #eef6f2;
+}
+
+body.annual-v9.poster-mode .report-container {
+  max-width: 980px;
+  padding: 3.2rem 3rem 3.4rem;
+  border-radius: 28px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(239, 246, 242, 0.98) 100%);
+  border: 1px solid rgba(18, 24, 20, 0.12);
+  box-shadow: 0 40px 90px rgba(18, 24, 20, 0.2), 0 0 0 12px rgba(58, 175, 120, 0.12);
+}
+
+body.annual-v9 .finale-note {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+body.annual-v9 .finale-mascot {
+  width: 72px;
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+body.annual-v9 .finale-text {
+  flex: 1;
+}
+
+@media (max-width: 720px) {
+  body.annual-v9::after {
+    opacity: 0.16;
+    background-size: 72px 72px;
+  }
+
+  body.annual-v9 .mascot-sticker {
+    width: 58px;
+    height: 58px;
+    font-size: 1.2rem;
+    right: 1.2rem;
+    top: 1.2rem;
+  }
+
+  body.annual-v9 .mascot-badge-img {
+    width: 78px;
+    height: 78px;
+    right: 1.1rem;
+    top: 1.05rem;
+  }
+
+  body.annual-v9 .finale-mascot {
+    width: 56px;
+  }
+}
