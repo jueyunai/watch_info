@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://tos.watcha.cn/public/PingFangSC-Regular/PingFangSC-Regular.css"
+        crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://tos.watcha.cn/public/Bebas-Neue/Bebas-Neue.css" crossorigin="anonymous" />
+    <style>
+        body {
+            padding: 40px;
+            background: #f0f2f5;
+            font-family: 'PingFang SC', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            max-width: 900px;
+        }
+
+        /* 模拟海报头部的卡片 */
+        .preview-card {
+            width: 400px;
+            height: 200px;
+            position: relative;
+            /* 模拟 annual.v4.css 中的 .cover-section 样式 */
+            background: linear-gradient(135deg, rgba(58, 175, 120, 0.38) 0%, rgba(255, 255, 255, 0.96) 60%);
+            border-radius: 28px;
+            box-shadow: 0 24px 50px rgba(58, 175, 120, 0.22);
+            padding: 24px 28px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .card-header {
+            margin-bottom: 10px;
+        }
+
+        .kicker {
+            font-size: 14px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .title {
+            font-family: 'Bebas Neue';
+            font-size: 42px;
+            color: #121814;
+            line-height: 1;
+            margin: 0;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #5b655f;
+            margin-top: 8px;
+        }
+
+        /* 徽章样式，模拟 CSS 中的 .mascot-badge-img */
+        .badge-img {
+            position: absolute;
+            right: 2rem;
+            top: 2rem;
+            width: 100px;
+            height: 100px;
+            /* 模拟普通视图大小 */
+            object-fit: contain;
+            filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.15));
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* 悬停动效 */
+        .badge-img:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .badge-label {
+            position: absolute;
+            bottom: 20px;
+            right: 24px;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 4px 8px;
+            border-radius: 12px;
+            color: #2d8b5e;
+            font-weight: bold;
+        }
+    </style>
+    <title>Badge Final Showcase</title>
+</head>
+
+<body>
+
+    <h1>观猹 2025 年报徽章 · 最终成品预览</h1>
+
+    <div class="showcase-grid">
+
+        <!-- Observer -->
+        <div class="preview-card">
+            <div class="card-header">
+                <div class="kicker">Watcha Annual 2025</div>
+                <h1 class="title">我的观猹年报</h1>
+                <div class="subtitle">回望365天，看见思维的形状</div>
+            </div>
+            <img src="public/badges/badge_observer.png" class="badge-img" alt="Observer">
+            <div class="badge-label">Lv.1 Observer (青铜)</div>
+        </div>
+
+        <!-- Analyst -->
+        <div class="preview-card">
+            <div class="card-header">
+                <div class="kicker">Watcha Annual 2025</div>
+                <h1 class="title">我的观猹年报</h1>
+                <div class="subtitle">回望365天，看见思维的形状</div>
+            </div>
+            <img src="public/badges/badge_analyst.png" class="badge-img" alt="Analyst">
+            <div class="badge-label">Lv.2 Analyst (白银)</div>
+        </div>
+
+        <!-- Philosopher -->
+        <div class="preview-card">
+            <div class="card-header">
+                <div class="kicker">Watcha Annual 2025</div>
+                <h1 class="title">我的观猹年报</h1>
+                <div class="subtitle">回望365天，看见思维的形状</div>
+            </div>
+            <img src="public/badges/badge_philosopher.png" class="badge-img" alt="Philosopher">
+            <div class="badge-label">Lv.3 Philosopher (黄金)</div>
+        </div>
+
+        <!-- Legend -->
+        <div class="preview-card">
+            <div class="card-header">
+                <div class="kicker">Watcha Annual 2025</div>
+                <h1 class="title">我的观猹年报</h1>
+                <div class="subtitle">回望365天，看见思维的形状</div>
+            </div>
+            <img src="public/badges/badge_legend.png" class="badge-img" alt="Legend">
+            <div class="badge-label">Lv.4 Legend (传说)</div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

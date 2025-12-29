@@ -4,7 +4,10 @@ import { parseWatchaUrl } from './utils/urlParser';
 import { fetchUserInfo, fetchAllReviews, fetchAllPosts } from './services/api';
 import { transformReviews, sortReviewsByDate, transformPosts, sortPostsByDate } from './utils/reviewProcessor';
 import { analyzeAnnualData, generateLabels, formatWordCount, getMonthName } from './utils/annualAnalyzer';
+import { generateLLMInput, ANNUAL_SYSTEM_PROMPT, ANNUAL_USER_PROMPT } from './utils/dataSummarizer';
+import { mockAiContent } from './mock/aiResponse';
 import type { AnnualStats, AchievementLabel } from './types/annual';
+import type { Review, Post } from './types';
 
 // DOM 元素 - 入口页
 const urlInput = document.getElementById('url-input') as HTMLInputElement;
@@ -33,6 +36,20 @@ const monthlyChart = document.getElementById('monthly-chart') as HTMLDivElement;
 const downloadPosterBtn = document.getElementById('download-poster-btn') as HTMLButtonElement;
 const showPromptBtn = document.getElementById('show-prompt-btn') as HTMLButtonElement;
 const backBtn = document.getElementById('back-btn') as HTMLButtonElement;
+const generateAiBtn = document.getElementById('generate-ai-btn') as HTMLButtonElement;
+
+// DOM 元素 - AI 洞察
+const aiLoading = document.getElementById('ai-loading') as HTMLDivElement;
+const aiContent = document.getElementById('ai-content') as HTMLDivElement;
+const aiSection = document.getElementById('ai-insight-container')?.closest('.ai-section') as HTMLElement | null;
+
+// DOM 元素 - 海报预览弹窗
+const posterModal = document.getElementById('poster-modal') as HTMLDivElement;
+const closePosterModal = document.getElementById('close-poster-modal') as HTMLButtonElement;
+const posterImage = document.getElementById('poster-image') as HTMLImageElement;
+const posterLoading = document.getElementById('poster-loading') as HTMLDivElement;
+const downloadPosterConfirmBtn = document.getElementById('download-poster-confirm-btn') as HTMLButtonElement;
+const posterBackBtn = document.getElementById('poster-back-btn') as HTMLButtonElement;
 
 // DOM 元素 - 弹窗
 const promptModal = document.getElementById('prompt-modal') as HTMLDivElement;
@@ -43,6 +60,11 @@ const copySuccess = document.getElementById('copy-success') as HTMLSpanElement;
 
 // 应用状态
 let currentNickname = '';
+let currentUsername = '';
+let currentStats: AnnualStats | null = null;
+let currentReviews: Review[] = [];
+let currentPosts: Post[] = [];
+let posterDataUrl = '';
 
 
 // 年报配方提示词
@@ -165,13 +187,65 @@ function renderMonthlyChart(stats: AnnualStats) {
     }).join('');
 }
 
+// 获取徽章等级
+function getBadgeLevel(stats: AnnualStats): string {
+    // Level 4: Legend (Top 1% or very high activity)
+    if (stats.totalReviews >= 200 || stats.activeDays >= 200) {
+        return 'legend';
+    }
+    // Level 3: Philosopher (Deep content)
+    if (stats.totalReviews >= 50 || (stats.totalReviews > 5 && stats.totalWords / stats.totalReviews >= 500)) {
+        return 'philosopher';
+    }
+    // Level 2: Analyst (Consistent activity)
+    if (stats.totalReviews >= 10 || stats.activeDays >= 30) {
+        return 'analyst';
+    }
+    // Level 1: Observer (Default)
+    return 'observer';
+}
+
 // 渲染报告
-function renderReport(nickname: string, stats: AnnualStats, labels: AchievementLabel[]) {
+function renderReport(nickname: string, stats: AnnualStats, labels: AchievementLabel[], reviews: Review[], posts: Post[]) {
     currentNickname = nickname;
+    currentStats = stats;
+    currentReviews = reviews;
+    currentPosts = posts;
+
+    // 重置 AI 洞察区域
+    aiContent.innerHTML = '';
+    generateAiBtn.classList.remove('hidden');
+    generateAiBtn.disabled = false;
 
 
     // 用户信息
     userNickname.textContent = nickname;
+
+    // 渲染徽章
+    const badgeLevel = getBadgeLevel(stats);
+    const coverSection = document.querySelector('.cover-section');
+    const existingBadge = document.querySelector('.mascot-badge-img');
+    const existingBubble = document.querySelector('.mascot-bubble');
+
+    if (existingBadge) {
+        existingBadge.remove();
+    }
+
+    // 如果存在旧的 bubble，隐藏它 (虽然 CSS 已经处理了 poster-mode 下隐藏，这里彻底一点)
+    if (existingBubble) {
+        existingBubble.classList.add('hidden');
+    }
+
+    const badgeImg = document.createElement('img');
+    badgeImg.src = `/badges/badge_${badgeLevel}.png`;
+    badgeImg.className = 'mascot-badge-img';
+    badgeImg.alt = `Level: ${badgeLevel}`;
+    badgeImg.title = `年度等级：${badgeLevel.charAt(0).toUpperCase() + badgeLevel.slice(1)}`;
+
+    // 插入到 cover-section 中
+    if (coverSection) {
+        coverSection.appendChild(badgeImg);
+    }
 
     // 成就标签
     renderLabels(labels);
@@ -186,6 +260,9 @@ function renderReport(nickname: string, stats: AnnualStats, labels: AchievementL
 
     // 月度图表
     renderMonthlyChart(stats);
+
+    // 尝试加载缓存的 AI 洞察
+    loadCachedAIInsight();
 
     // 切换页面
     entryPage.classList.add('hidden');
@@ -206,6 +283,7 @@ async function generateReport() {
     }
 
     const username = parseResult.username!;
+    currentUsername = username;
 
     try {
         generateBtn.disabled = true;
@@ -232,7 +310,7 @@ async function generateReport() {
         hideLoading();
 
         // 渲染报告
-        renderReport(userInfo.nickname || username, stats, labels);
+        renderReport(userInfo.nickname || username, stats, labels, allReviews, allPosts);
 
     } catch (error) {
         hideLoading();
@@ -246,38 +324,127 @@ async function generateReport() {
     }
 }
 
-// 下载海报
+function getAIInsightCacheKey() {
+    return currentUsername ? `watcha-ai-insight-${currentUsername}` : '';
+}
+
+function loadCachedAIInsight() {
+    const cacheKey = getAIInsightCacheKey();
+    if (!cacheKey) return;
+    try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            aiContent.innerHTML = renderMarkdown(cached);
+            generateAiBtn.classList.add('hidden');
+            generateAiBtn.disabled = false;
+        }
+    } catch {
+        // Ignore storage errors.
+    }
+}
+
+function cacheAIInsight(content: string) {
+    const cacheKey = getAIInsightCacheKey();
+    if (!cacheKey) return;
+    try {
+        localStorage.setItem(cacheKey, content);
+    } catch {
+        // Ignore storage errors.
+    }
+}
+
+function clearAIInsightCache() {
+    const cacheKey = getAIInsightCacheKey();
+    if (!cacheKey) return;
+    try {
+        localStorage.removeItem(cacheKey);
+    } catch {
+        // Ignore storage errors.
+    }
+}
+
+function ensureAIInsightReady(): boolean {
+    if (!aiLoading.classList.contains('hidden')) {
+        alert('AI 洞察正在生成，请稍后再分享。');
+        aiSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
+    if (!aiContent.innerHTML.trim()) {
+        alert('请先生成 AI 洞察，再分享海报。');
+        aiSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
+    if (aiContent.querySelector('.ai-error')) {
+        alert('AI 洞察生成失败，请重新生成后再分享。');
+        aiSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
+    return true;
+}
+
+// 生成并预览海报
 async function downloadPoster() {
+    if (!ensureAIInsightReady()) return;
     const reportContainer = document.getElementById('report-container');
-    if (!reportContainer) return;
+    if (!reportContainer || !posterModal) return;
 
     downloadPosterBtn.disabled = true;
     downloadPosterBtn.textContent = '正在生成...';
+    posterDataUrl = '';
+    posterImage.src = '';
+    posterImage.classList.add('hidden');
+    posterLoading.classList.remove('hidden');
+    downloadPosterConfirmBtn.disabled = true;
+    posterModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 
     try {
         // 动态加载 html2canvas
         const html2canvas = (await import('html2canvas')).default;
+        document.body.classList.add('poster-mode');
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+        const backgroundColor = getComputedStyle(document.body).backgroundColor || '#ffffff';
 
         const canvas = await html2canvas(reportContainer, {
-            backgroundColor: '#0F1419',
+            backgroundColor,
             scale: 2,
             useCORS: true,
             logging: false,
         });
 
-        // 创建下载链接
-        const link = document.createElement('a');
-        link.download = `观猹2025年报_${currentNickname}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+        posterDataUrl = canvas.toDataURL('image/png');
+        posterImage.src = posterDataUrl;
+        posterImage.classList.remove('hidden');
+        downloadPosterConfirmBtn.disabled = false;
 
     } catch (error) {
         console.error('生成海报失败:', error);
         alert('生成海报失败，请稍后重试');
+        closePosterPreview();
     } finally {
+        document.body.classList.remove('poster-mode');
+        posterLoading.classList.add('hidden');
         downloadPosterBtn.disabled = false;
-        downloadPosterBtn.textContent = '📥 下载海报';
+        downloadPosterBtn.textContent = '分享海报';
     }
+}
+
+function closePosterPreview() {
+    posterModal.classList.add('hidden');
+    document.body.style.overflow = '';
+    posterDataUrl = '';
+    posterImage.src = '';
+    posterImage.classList.add('hidden');
+    posterLoading.classList.add('hidden');
+    downloadPosterConfirmBtn.disabled = true;
+}
+
+function downloadPosterFromPreview() {
+    if (!posterDataUrl) return;
+    const link = document.createElement('a');
+    link.download = `观猹2025年报_${currentNickname}.png`;
+    link.href = posterDataUrl;
+    link.click();
 }
 
 // 显示年报配方弹窗
@@ -308,10 +475,117 @@ async function copyPromptToClipboard() {
     }
 }
 
-// 返回入口页
-function goBack() {
-    reportPage.classList.add('hidden');
-    entryPage.classList.remove('hidden');
+// 重新生成 AI 洞察
+function refreshAIInsight() {
+    clearAIInsightCache();
+    generateAiBtn.classList.remove('hidden');
+    generateAiBtn.disabled = false;
+    generateAIInsight();
+}
+
+// 生成 AI 洞察
+async function generateAIInsight() {
+    if (!currentStats || currentReviews.length === 0) {
+        alert('没有可分析的数据');
+        return;
+    }
+
+    generateAiBtn.disabled = true;
+    generateAiBtn.classList.add('hidden');
+    aiLoading.classList.remove('hidden');
+    aiContent.innerHTML = '';
+
+    try {
+        const isDev = import.meta.env.DEV;
+        const useMock = isDev && import.meta.env.VITE_USE_MOCK === 'true';
+        let content = '';
+
+        if (useMock) {
+            // 使用 mock 数据
+            content = mockAiContent;
+        } else if (isDev) {
+            // 开发环境：直接调用 LLM API
+            const dataInput = generateLLMInput(currentNickname, currentStats, currentReviews, currentPosts, 2025);
+            const config = {
+                apiKey: import.meta.env.VITE_DEEPSEEK_API_KEY,
+                baseUrl: import.meta.env.VITE_DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1',
+                model: import.meta.env.VITE_DEEPSEEK_MODEL || 'deepseek-chat',
+            };
+
+            const response = await fetch(`${config.baseUrl}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${config.apiKey}`,
+                },
+                body: JSON.stringify({
+                    model: config.model,
+                    messages: [
+                        { role: 'system', content: ANNUAL_SYSTEM_PROMPT },
+                        { role: 'user', content: ANNUAL_USER_PROMPT(dataInput) },
+                    ],
+                    max_tokens: 4096,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`LLM 请求失败: ${response.status}`);
+            }
+
+            const data = await response.json();
+            content = data.choices?.[0]?.message?.content || '';
+        } else {
+            // 生产环境：走后端代理
+            const dataInput = generateLLMInput(currentNickname, currentStats, currentReviews, currentPosts, 2025);
+            const response = await fetch('/api/llm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: [
+                        { role: 'system', content: ANNUAL_SYSTEM_PROMPT },
+                        { role: 'user', content: ANNUAL_USER_PROMPT(dataInput) },
+                    ],
+                }),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'AI 生成失败');
+            }
+
+            const data = await response.json();
+            content = data.choices?.[0]?.message?.content || '';
+        }
+
+        if (content) {
+            aiContent.innerHTML = renderMarkdown(content);
+            cacheAIInsight(content);
+        } else {
+            aiContent.innerHTML = '<p class="ai-error">AI 未返回有效内容</p>';
+        }
+    } catch (error) {
+        console.error('AI 生成失败:', error);
+        aiContent.innerHTML = `<p class="ai-error">生成失败: ${error instanceof Error ? error.message : '未知错误'}</p>`;
+        generateAiBtn.classList.remove('hidden');
+        generateAiBtn.disabled = false;
+    } finally {
+        aiLoading.classList.add('hidden');
+    }
+}
+
+// 简单的 Markdown 渲染
+function renderMarkdown(text: string): string {
+    return text
+        .replace(/### (.+)/g, '<h4>$1</h4>')
+        .replace(/## (.+)/g, '<h3>$1</h3>')
+        .replace(/# (.+)/g, '<h2>$1</h2>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`(.+?)`/g, '<code>$1</code>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>')
+        .replace(/^/, '<p>')
+        .replace(/$/, '</p>');
 }
 
 // 事件绑定
@@ -324,10 +598,14 @@ urlInput.addEventListener('keypress', (e) => {
 
 downloadPosterBtn.addEventListener('click', downloadPoster);
 showPromptBtn.addEventListener('click', showPromptModal);
-backBtn.addEventListener('click', goBack);
+backBtn.addEventListener('click', refreshAIInsight);
+generateAiBtn.addEventListener('click', generateAIInsight);
 
 closeModal.addEventListener('click', hidePromptModal);
 copyPromptBtn.addEventListener('click', copyPromptToClipboard);
+closePosterModal.addEventListener('click', closePosterPreview);
+posterBackBtn.addEventListener('click', closePosterPreview);
+downloadPosterConfirmBtn.addEventListener('click', downloadPosterFromPreview);
 
 promptModal.addEventListener('click', (e) => {
     if (e.target === promptModal) {
@@ -335,8 +613,17 @@ promptModal.addEventListener('click', (e) => {
     }
 });
 
+posterModal.addEventListener('click', (e) => {
+    if (e.target === posterModal) {
+        closePosterPreview();
+    }
+});
+
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !promptModal.classList.contains('hidden')) {
         hidePromptModal();
+    }
+    if (e.key === 'Escape' && !posterModal.classList.contains('hidden')) {
+        closePosterPreview();
     }
 });

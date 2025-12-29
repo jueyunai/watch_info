@@ -1,0 +1,116 @@
+body.annual-v5 {
+  --moss: #3aaf78;
+  --moss-dark: #2d8b5e;
+  --tangerine: #f06b3b;
+  --gold: #e4c27f;
+  --shadow: 0 18px 50px rgba(18, 24, 20, 0.18);
+  font-family: 'PingFangSC-Regular', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+body.annual-v5 .brand-year,
+body.annual-v5 .hero-eyebrow,
+body.annual-v5 .hero-title,
+body.annual-v5 .section-kicker,
+body.annual-v5 .section-title,
+body.annual-v5 .cover-kicker,
+body.annual-v5 .cover-title,
+body.annual-v5 .cover-stamp,
+body.annual-v5 .stat-value,
+body.annual-v5 .report-marquee,
+body.annual-v5 .thanks-text,
+body.annual-v5 .qr-url,
+body.annual-v5 .modal-header h2 {
+  font-family: 'Bebas Neue', 'PingFangSC-Regular', 'PingFang SC', sans-serif;
+}
+
+body.annual-v5 .input-footer,
+body.annual-v5 .prompt-text,
+body.annual-v5 .ai-content code,
+body.annual-v5 .copy-success {
+  font-family: 'PingFangSC-Regular', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+body.annual-v5 .hero-panel::before {
+  background: linear-gradient(120deg, rgba(58, 175, 120, 0.22), transparent 55%);
+}
+
+body.annual-v5 .primary-btn {
+  background: linear-gradient(135deg, var(--moss), var(--moss-dark));
+  box-shadow: 0 12px 22px rgba(58, 175, 120, 0.3);
+}
+
+body.annual-v5 .secondary-btn {
+  border-color: var(--moss);
+  color: var(--moss);
+}
+
+body.annual-v5 .secondary-btn:hover {
+  background: var(--moss);
+  color: #ffffff;
+}
+
+body.annual-v5 .label-badge {
+  background: rgba(58, 175, 120, 0.18);
+  border: 1px solid rgba(58, 175, 120, 0.5);
+  color: var(--moss-dark);
+}
+
+body.annual-v5 .stat-card {
+  box-shadow: 10px 10px 0 rgba(58, 175, 120, 0.18);
+}
+
+body.annual-v5 .stat-value {
+  color: var(--moss);
+}
+
+body.annual-v5 .bar {
+  background: linear-gradient(180deg, var(--moss), #9be2c2);
+  box-shadow: 0 8px 16px rgba(58, 175, 120, 0.3);
+}
+
+body.annual-v5 .legend-dot {
+  background: var(--moss);
+}
+
+body.annual-v5 .ai-content h2,
+body.annual-v5 .ai-content h3,
+body.annual-v5 .ai-content h4 {
+  color: var(--moss-dark);
+}
+
+body.annual-v5 .ai-content strong {
+  color: var(--moss);
+}
+
+body.annual-v5 .mascot-sticker {
+  position: absolute;
+  right: 2.2rem;
+  top: 2.2rem;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  border: 2px solid #141815;
+  background: #ffffff;
+  color: #141815;
+  font-size: 1.6rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-6deg);
+  box-shadow: 10px 10px 0 rgba(58, 175, 120, 0.22);
+}
+
+body.annual-v5 .report-marquee {
+  color: var(--moss-dark);
+}
+
+@media (max-width: 720px) {
+  body.annual-v5 .mascot-sticker {
+    width: 58px;
+    height: 58px;
+    font-size: 1.2rem;
+    right: 1.2rem;
+    top: 1.2rem;
+  }
+}

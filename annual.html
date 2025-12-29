@@ -5,32 +5,63 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>观猹2025年度报告</title>
-    <!-- 预加载字体 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Serif+SC:wght@400;600;700&family=ZCOOL+QingKe+HuangYou&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="app">
-      <!-- 入口页面 -->
-      <div id="entry-page" class="page">
-        <header class="annual-header">
-          <h1>🦔 观猹2025年度报告</h1>
-          <p class="slogan">「回望365天，看见思维的形状」</p>
+      <div id="entry-page" class="page entry-page">
+        <div class="page-noise" aria-hidden="true"></div>
+        <header class="entry-header">
+          <div class="brand-stack">
+            <span class="brand-chip">观猹 WATCHA</span>
+            <span class="brand-year">2025 ANNUAL REPORT</span>
+          </div>
+          <div class="brand-sigil" aria-hidden="true">🦔</div>
         </header>
 
         <main class="entry-main">
-          <section class="input-section">
+          <section class="hero-panel">
+            <p class="hero-eyebrow">Annual Thinking Ledger</p>
+            <h1 class="hero-title">把一年思考，印成一张档案海报</h1>
+            <p class="hero-desc">
+              输入你的观猹主页链接，生成专属年度报告。输出不是流水账，而是你的认知轨迹与灵感坐标。
+            </p>
+            <div class="hero-cards">
+              <div class="hero-card">
+                <span class="hero-card-label">年度主题</span>
+                <span class="hero-card-value">认知演进</span>
+              </div>
+              <div class="hero-card">
+                <span class="hero-card-label">报告格式</span>
+                <span class="hero-card-value">年度档案</span>
+              </div>
+              <div class="hero-card">
+                <span class="hero-card-label">输出维度</span>
+                <span class="hero-card-value">洞察 + 轨迹</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="input-section frame-card">
+            <div class="input-header">
+              <h2>生成你的年度报告</h2>
+              <p>只需要输入观猹个人主页链接</p>
+            </div>
             <div class="input-group">
-              <label for="url-input">输入你的观猹个人主页</label>
-              <input 
-                type="text" 
-                id="url-input" 
-                placeholder="https://watcha.cn/@用户名"
-              />
+              <label for="url-input">观猹个人主页</label>
+              <input type="text" id="url-input" placeholder="https://watcha.cn/@用户名" />
             </div>
             <button id="generate-btn" class="primary-btn">生成我的年度报告</button>
             <p id="error-msg" class="error hidden"></p>
+            <div class="input-footer">
+              <span>数据来源：watcha.cn</span>
+              <span>生成约需 30-90 秒</span>
+            </div>
           </section>
 
           <section id="loading-section" class="loading-section hidden">
@@ -40,94 +71,177 @@
           </section>
         </main>
 
-        <footer>
-          <p>数据来源：<a href="https://watcha.cn" target="_blank">观猹 watcha.cn</a></p>
+        <footer class="entry-footer">
+          <p>报告基于你在观猹的公开输出生成</p>
           <p><a href="/" class="back-link">← 返回猹评导出工具</a></p>
         </footer>
       </div>
 
-      <!-- 报告展示页面 -->
-      <div id="report-page" class="page hidden">
-        <div id="report-container" class="report-container">
-          <!-- 封面 -->
-          <section class="report-section cover-section">
-            <div class="cover-bg"></div>
-            <div class="cover-content">
-              <h1 class="cover-title">🦔 我的2025观猹年报</h1>
-              <p class="cover-slogan">回望365天，看见思维的形状</p>
-              <div class="user-info">
-                <span id="user-nickname" class="nickname"></span>
-              </div>
-              <div id="labels-container" class="labels-container"></div>
-            </div>
-          </section>
+      <div id="report-page" class="page report-page hidden">
+        <div class="report-shell">
+          <div class="report-marquee" aria-hidden="true">
+            <span>WATCHA 2025 ANNUAL ·</span>
+            <span>WATCHA 2025 ANNUAL ·</span>
+            <span>WATCHA 2025 ANNUAL ·</span>
+          </div>
 
-          <!-- 数据概览 -->
-          <section class="report-section data-section">
-            <h2 class="section-title">📊 2025 数据概览</h2>
-            <div class="stats-grid">
-              <div class="stat-card">
-                <span class="stat-icon">📝</span>
-                <span id="stat-reviews" class="stat-value">0</span>
-                <span class="stat-label">猹评</span>
+          <div id="report-container" class="report-container">
+            <section class="report-section cover-section">
+              <div class="cover-frame">
+                <div class="cover-left">
+                  <p class="cover-kicker">观猹年度档案 2025</p>
+                  <h1 class="cover-title">我的观猹年报</h1>
+                  <p class="cover-subtitle">回望365天，看见思维的形状</p>
+                  <div class="cover-meta">
+                    <span class="meta-label">档案编号</span>
+                    <span class="meta-value">WR-2025</span>
+                  </div>
+                </div>
+                <div class="cover-right">
+                  <div class="user-info">
+                    <span id="user-nickname" class="nickname"></span>
+                    <span class="user-caption">年度观察者</span>
+                  </div>
+                  <div id="labels-container" class="labels-container"></div>
+                </div>
               </div>
-              <div class="stat-card">
-                <span class="stat-icon">💬</span>
-                <span id="stat-posts" class="stat-value">0</span>
-                <span class="stat-label">讨论</span>
-              </div>
-              <div class="stat-card">
-                <span class="stat-icon">🎯</span>
-                <span id="stat-products" class="stat-value">0</span>
-                <span class="stat-label">产品</span>
-              </div>
-              <div class="stat-card">
-                <span class="stat-icon">📅</span>
-                <span id="stat-days" class="stat-value">0</span>
-                <span class="stat-label">活跃天数</span>
-              </div>
-              <div class="stat-card">
-                <span class="stat-icon">✍️</span>
-                <span id="stat-words" class="stat-value">0</span>
-                <span class="stat-label">总字数</span>
-              </div>
-              <div class="stat-card">
-                <span class="stat-icon">🔥</span>
-                <span id="stat-active-month" class="stat-value">-</span>
-                <span class="stat-label">最高产月</span>
-              </div>
-            </div>
-          </section>
+              <div class="cover-stamp" aria-hidden="true">2025</div>
+            </section>
 
-          <!-- 月度分布 -->
-          <section class="report-section chart-section">
-            <h2 class="section-title">📈 月度输出曲线</h2>
-            <div id="monthly-chart" class="monthly-chart"></div>
-          </section>
-
-          <!-- 尾声 -->
-          <section class="report-section footer-section">
-            <div class="footer-content">
-              <p class="thanks-text">🦔 感谢在观猹留下思考的痕迹</p>
-              <p class="year-text">2025，我们一起"猹"过</p>
-              <div class="qr-hint">
-                <p>扫码生成你的年度报告</p>
-                <p class="qr-url">watcha-annual.vercel.app</p>
+            <section class="report-section data-section">
+              <header class="section-header">
+                <p class="section-kicker">Data Atlas</p>
+                <h2 class="section-title">2025 数据概览</h2>
+                <p class="section-lede">年度输出密度、内容跨度、活跃周期一览。</p>
+              </header>
+              <div class="stats-grid">
+                <article class="stat-card">
+                  <div class="stat-top">
+                    <span class="stat-icon">📝</span>
+                    <span class="stat-label">猹评</span>
+                  </div>
+                  <span id="stat-reviews" class="stat-value">0</span>
+                  <span class="stat-unit">条</span>
+                </article>
+                <article class="stat-card">
+                  <div class="stat-top">
+                    <span class="stat-icon">💬</span>
+                    <span class="stat-label">讨论</span>
+                  </div>
+                  <span id="stat-posts" class="stat-value">0</span>
+                  <span class="stat-unit">次</span>
+                </article>
+                <article class="stat-card">
+                  <div class="stat-top">
+                    <span class="stat-icon">🎯</span>
+                    <span class="stat-label">产品</span>
+                  </div>
+                  <span id="stat-products" class="stat-value">0</span>
+                  <span class="stat-unit">个</span>
+                </article>
+                <article class="stat-card">
+                  <div class="stat-top">
+                    <span class="stat-icon">📅</span>
+                    <span class="stat-label">活跃天数</span>
+                  </div>
+                  <span id="stat-days" class="stat-value">0</span>
+                  <span class="stat-unit">天</span>
+                </article>
+                <article class="stat-card">
+                  <div class="stat-top">
+                    <span class="stat-icon">✍️</span>
+                    <span class="stat-label">总字数</span>
+                  </div>
+                  <span id="stat-words" class="stat-value">0</span>
+                  <span class="stat-unit">字</span>
+                </article>
+                <article class="stat-card">
+                  <div class="stat-top">
+                    <span class="stat-icon">🔥</span>
+                    <span class="stat-label">最高产月</span>
+                  </div>
+                  <span id="stat-active-month" class="stat-value">-</span>
+                  <span class="stat-unit">月份</span>
+                </article>
               </div>
-            </div>
-          </section>
-        </div>
+            </section>
 
-        <!-- 操作按钮 -->
-        <div class="report-actions">
-          <button id="download-poster-btn" class="primary-btn">📥 下载海报</button>
-          <button id="show-prompt-btn" class="secondary-btn">📝 年报配方</button>
-          <button id="back-btn" class="secondary-btn">← 重新生成</button>
+            <section class="report-section chart-section">
+              <header class="section-header">
+                <p class="section-kicker">Timeline</p>
+                <h2 class="section-title">月度输出曲线</h2>
+                <p class="section-lede">观察灵感峰谷与节奏差异。</p>
+              </header>
+              <div class="chart-shell">
+                <div class="chart-legend">
+                  <span class="legend-dot"></span>
+                  <span>总输出 = 猹评 + 讨论</span>
+                </div>
+                <div id="monthly-chart" class="monthly-chart"></div>
+              </div>
+            </section>
+
+            <section class="report-section ai-section">
+              <header class="section-header">
+                <p class="section-kicker">AI Insight</p>
+                <h2 class="section-title">AI 年度洞察</h2>
+                <p class="section-lede">让模型为你的年度输出做一次深度总结。</p>
+              </header>
+              <div id="ai-insight-container" class="ai-insight-container">
+                <div id="ai-loading" class="ai-loading hidden">
+                  <div class="ai-spinner"></div>
+                  <p>AI 正在分析你的年度数据...</p>
+                </div>
+                <div id="ai-content" class="ai-content"></div>
+                <button id="generate-ai-btn" class="secondary-btn">✨ 生成 AI 洞察</button>
+              </div>
+            </section>
+
+            <section class="report-section footer-section">
+              <div class="finale-grid">
+                <div class="finale-note">
+                  <p class="thanks-text">🦔 感谢在观猹留下思考的痕迹</p>
+                  <p class="year-text">2025，我们一起“猹”过</p>
+                </div>
+                <div class="finale-qr">
+                  <p>扫码生成你的年度报告</p>
+                  <p class="qr-url">watcha-annual.vercel.app</p>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="report-actions">
+            <button id="download-poster-btn" class="primary-btn">分享海报</button>
+            <button id="show-prompt-btn" class="secondary-btn">📝 年报配方</button>
+            <button id="back-btn" class="secondary-btn">← 重新生成</button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 年报配方弹窗 -->
+    <div id="poster-modal" class="modal hidden">
+      <div class="modal-content poster-modal-content">
+        <div class="modal-header">
+          <h2>🖼️ 海报预览</h2>
+          <button id="close-poster-modal" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body poster-modal-body">
+          <div class="poster-preview">
+            <div id="poster-loading" class="poster-loading hidden">
+              <div class="spinner"></div>
+              <p>正在生成海报预览...</p>
+            </div>
+            <img id="poster-image" class="poster-image hidden" alt="年度报告海报预览" />
+          </div>
+        </div>
+        <div class="modal-footer poster-modal-footer">
+          <button id="download-poster-confirm-btn" class="primary-btn">下载海报</button>
+          <button id="poster-back-btn" class="secondary-btn">返回</button>
+        </div>
+      </div>
+    </div>
+
     <div id="prompt-modal" class="modal hidden">
       <div class="modal-content">
         <div class="modal-header">
@@ -135,7 +249,7 @@
           <button id="close-modal" class="close-btn">&times;</button>
         </div>
         <div class="modal-body">
-          <p class="modal-hint">复制以下提示词，连同导出的数据一起发送给AI（如ChatGPT、Claude等），获取深度年度洞察分析。</p>
+          <p class="modal-hint">复制以下提示词，连同导出的数据一起发送给AI，获取深度年度洞察分析。</p>
           <pre id="prompt-text" class="prompt-text"></pre>
         </div>
         <div class="modal-footer">
