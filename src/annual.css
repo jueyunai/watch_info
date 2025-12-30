@@ -1646,8 +1646,9 @@ body.poster-mode .ai-section .section-header::after {
 
 /* 海报模式下统一字体，避免 html2canvas 字符重叠 */
 body.poster-mode .ai-content {
-  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  letter-spacing: 0.02em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  letter-spacing: 0.05em;
+  word-spacing: 0.1em;
 }
 
 body.annual-v7 .finale-note {
