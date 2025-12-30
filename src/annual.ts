@@ -592,6 +592,12 @@ function refreshAIInsight() {
     console.log(`[AI] 切换模型: ${providers[currentProviderIndex]}`);
     generateAiBtn.classList.remove('hidden');
     generateAiBtn.disabled = false;
+
+    // 🚀 滚动到 AI 洞察区域
+    if (aiSection) {
+        aiSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     generateAIInsight(true); // 强制刷新
 }
 
