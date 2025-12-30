@@ -474,6 +474,27 @@ async function waitForImages(container: HTMLElement): Promise<void> {
     await Promise.all(promises);
 }
 
+// 将图片转为 base64，避免 html2canvas 重复请求
+async function convertImagesToBase64(container: HTMLElement): Promise<void> {
+    const images = container.querySelectorAll('img');
+    const promises = Array.from(images).map(async (img) => {
+        if (img.src.startsWith('data:')) return; // 已经是 base64
+        try {
+            const response = await fetch(img.src);
+            const blob = await response.blob();
+            const base64 = await new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(blob);
+            });
+            img.src = base64;
+        } catch {
+            // 转换失败保持原样
+        }
+    });
+    await Promise.all(promises);
+}
+
 // 生成并预览海报
 async function downloadPoster() {
     if (!ensureAIInsightReady()) return;
@@ -493,6 +514,8 @@ async function downloadPoster() {
     try {
         // 等待所有图片加载完成
         await waitForImages(reportContainer);
+        // 将图片转为 base64，避免 html2canvas 重复请求
+        await convertImagesToBase64(reportContainer);
 
         // 使用 html2canvas 生成海报
         const html2canvas = (await import('html2canvas')).default;
@@ -506,15 +529,8 @@ async function downloadPoster() {
             useCORS: true,
             allowTaint: true,
             logging: false,
-            // 禁用外部资源加载，避免 CORS 超时
             foreignObjectRendering: false,
             removeContainer: true,
-            // 忽略跨域字体，使用系统字体回退
-            onclone: (clonedDoc) => {
-                // 移除外部字体引用，加速渲染
-                const links = clonedDoc.querySelectorAll('link[href*="tos.watcha.cn"]');
-                links.forEach(link => link.remove());
-            }
         });
 
         posterDataUrl = canvas.toDataURL('image/png');
