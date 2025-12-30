@@ -494,27 +494,21 @@ async function downloadPoster() {
         // 等待所有图片加载完成
         await waitForImages(reportContainer);
 
-        // 动态加载 html-to-image（替代 html2canvas）
-        const { toPng } = await import('html-to-image');
+        // 使用 html2canvas 生成海报
+        const html2canvas = (await import('html2canvas')).default;
         document.body.classList.add('poster-mode');
-        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+        // 等待样式生效
+        await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
 
-        // 使用 html-to-image 生成 PNG
-        posterDataUrl = await toPng(reportContainer, {
-            pixelRatio: 2,
-            cacheBust: true,
-            skipFonts: true, // 跳过字体加载，避免跨域问题
-            filter: (node) => {
-                // 过滤掉可能有问题的元素
-                if (node instanceof HTMLElement) {
-                    // 隐藏无尺寸的图片
-                    if (node.tagName === 'IMG' && !(node as HTMLImageElement).naturalWidth) {
-                        return false;
-                    }
-                }
-                return true;
-            }
+        const canvas = await html2canvas(reportContainer, {
+            backgroundColor: '#f6f8f7',
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
         });
+
+        posterDataUrl = canvas.toDataURL('image/png');
 
         posterImage.src = posterDataUrl;
         posterImage.classList.remove('hidden');
