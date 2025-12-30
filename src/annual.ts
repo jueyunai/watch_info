@@ -459,6 +459,21 @@ function ensureAIInsightReady(): boolean {
     return true;
 }
 
+// 等待所有图片加载完成
+async function waitForImages(container: HTMLElement): Promise<void> {
+    const images = container.querySelectorAll('img');
+    const promises = Array.from(images).map((img) => {
+        if (img.complete && img.naturalWidth > 0) {
+            return Promise.resolve();
+        }
+        return new Promise<void>((resolve) => {
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // 加载失败也继续，避免卡住
+        });
+    });
+    await Promise.all(promises);
+}
+
 // 生成并预览海报
 async function downloadPoster() {
     if (!ensureAIInsightReady()) return;
@@ -476,6 +491,9 @@ async function downloadPoster() {
     document.body.style.overflow = 'hidden';
 
     try {
+        // 等待所有图片加载完成
+        await waitForImages(reportContainer);
+        
         // 动态加载 html2canvas
         const html2canvas = (await import('html2canvas')).default;
         document.body.classList.add('poster-mode');
@@ -488,6 +506,15 @@ async function downloadPoster() {
             useCORS: true,
             allowTaint: true,
             logging: false,
+            onclone: (clonedDoc) => {
+                // 确保克隆文档中的图片也有尺寸
+                const clonedImages = clonedDoc.querySelectorAll('img');
+                clonedImages.forEach((img) => {
+                    if (!img.naturalWidth) {
+                        img.style.display = 'none';
+                    }
+                });
+            }
         });
 
         posterDataUrl = canvas.toDataURL('image/png');
