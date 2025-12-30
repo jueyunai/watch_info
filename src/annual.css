@@ -732,8 +732,9 @@ a:hover {
   padding: 1rem;
 }
 
-/* AI Thinking Block */
+/* AI Thinking Block - 默认隐藏 */
 .ai-thinking {
+  display: none;  /* 隐藏思考过程 */
   margin: 1.5rem 0;
   padding: 1.25rem;
   background: rgba(20, 24, 21, 0.03);
