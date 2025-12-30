@@ -155,7 +155,7 @@ a:hover {
   z-index: 0;
 }
 
-.hero-panel > * {
+.hero-panel>* {
   position: relative;
   z-index: 1;
 }
@@ -747,8 +747,8 @@ a:hover {
 
 .finale-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
-  gap: 2rem;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) minmax(0, 0.8fr);
+  gap: 1.5rem;
   align-items: center;
 }
 
@@ -788,7 +788,7 @@ a:hover {
   pointer-events: none;
 }
 
-.finale-qr > * {
+.finale-qr>* {
   position: relative;
   z-index: 1;
 }
@@ -971,6 +971,7 @@ a:hover {
     transform: translateY(18px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -981,6 +982,7 @@ a:hover {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-100%);
   }
@@ -1097,6 +1099,7 @@ a:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -1568,6 +1571,13 @@ body.annual-v7.poster-mode .report-container {
   box-shadow: 0 40px 90px rgba(18, 24, 20, 0.2), 0 0 0 12px rgba(58, 175, 120, 0.12);
 }
 
+/* Fix for html2canvas crash in WeChat: remove complex repeating gradients */
+body.annual-v7.poster-mode .finale-qr::after {
+  background: rgba(58, 175, 120, 0.05);
+  /* Simplified background */
+  background-image: none;
+}
+
 body.annual-v7 .finale-note {
   display: flex;
   align-items: center;
@@ -1991,7 +2001,7 @@ body.annual-v7.report-flat .report-section {
   margin-bottom: 0;
 }
 
-body.annual-v7.report-flat .report-section + .report-section {
+body.annual-v7.report-flat .report-section+.report-section {
   margin-top: 2rem;
   padding-top: 2rem;
   border-top: 1px solid var(--line);
@@ -2042,7 +2052,7 @@ body.annual-v7.report-scroll .report-section {
   box-shadow: none;
 }
 
-body.annual-v7.report-scroll .report-section + .report-section {
+body.annual-v7.report-scroll .report-section+.report-section {
   border-top: 1px solid rgba(18, 24, 20, 0.08);
 }
 
@@ -2095,9 +2105,9 @@ body.annual-v7.report-scroll .finale-qr::after {
 
 @media (min-width: 721px) {
   body.annual-v7.report-scroll .finale-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 240px);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 200px) minmax(0, 200px);
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
   }
 
   body.annual-v7.report-scroll .finale-qr {
@@ -2151,7 +2161,7 @@ body.annual-v7.report-film .report-section {
   box-shadow: none;
 }
 
-body.annual-v7.report-film .report-section + .report-section {
+body.annual-v7.report-film .report-section+.report-section {
   margin-top: 1.2rem;
 }
 
