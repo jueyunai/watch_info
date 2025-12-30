@@ -743,7 +743,8 @@ a:hover {
 
 /* AI Thinking Block - 默认隐藏，流式输出时显示 */
 .ai-thinking {
-  display: none;  /* 默认隐藏 */
+  display: none;
+  /* 默认隐藏 */
   margin: 1.5rem 0;
   padding: 1.25rem;
   background: rgba(20, 24, 21, 0.03);
@@ -1647,8 +1648,16 @@ body.poster-mode .ai-section .section-header::after {
 /* 海报模式下统一字体，避免 html2canvas 字符重叠 */
 body.poster-mode .ai-content {
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  letter-spacing: 0.05em;
-  word-spacing: 0.1em;
+  letter-spacing: normal;
+  word-spacing: normal;
+  font-variant-ligatures: none;
+  font-feature-settings: "kern" 0;
+}
+
+body.poster-mode .ai-content p,
+body.poster-mode .ai-content li {
+  text-align: left;
+  letter-spacing: normal;
 }
 
 body.annual-v7 .finale-note {

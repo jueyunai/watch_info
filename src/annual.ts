@@ -834,12 +834,15 @@ function renderMarkdown(text: string): string {
         return `\n\n__THINKING_BLOCK_${index}__\n\n`;
     });
 
-    // 2. 统一引号
+    // 2. 统一引号与括号 (处理海报模式下全角标点渲染位移问题)
     let quoteCount = 0;
-    processedText = processedText.replace(/["""""「」]/g, () => {
-        quoteCount++;
-        return quoteCount % 2 === 1 ? '"' : '"';
-    });
+    processedText = processedText
+        .replace(/["“”「」]/g, () => {
+            quoteCount++;
+            return quoteCount % 2 === 1 ? '“' : '”';
+        })
+        .replace(/（/g, ' (')
+        .replace(/）/g, ') ');
 
     const lines = processedText.split('\n');
     const html: string[] = [];
