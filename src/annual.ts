@@ -722,21 +722,24 @@ async function generateAIInsight(forceRefresh = false) {
                     if (!trimmedLine || !trimmedLine.startsWith('data:')) continue;
 
                     // 兼容 data: {...} 和 data:{...} 两种格式
-                    const data = trimmedLine.replace(/^data:\s*/, '');
-                    if (data === '[DONE]') continue;
+                    const rawData = trimmedLine.replace(/^data:\s*/, '');
+                    if (rawData === '[DONE]') continue;
 
                     try {
-                        const json = JSON.parse(data);
-                        // 兼容多种 delta 结构（某些厂商可能结构略有不同）
-                        const delta = json.choices?.[0]?.delta?.content || '';
+                        const json = JSON.parse(rawData);
+                        const choice = json.choices?.[0];
+                        if (!choice) continue;
+
+                        // 兼容多种内容字段 (OpenAI 标准 vs 推理模型标准)
+                        const delta = choice.delta?.content || choice.delta?.reasoning_content || '';
+
                         if (delta) {
                             fullContent += delta;
                             aiContent.innerHTML = renderMarkdown(fullContent);
                             aiContent.scrollTop = aiContent.scrollHeight;
                         }
                     } catch (e) {
-                        // 记录解析失败的行，辅助排查厂商差异
-                        console.warn('[AI] 解析单行数据失败:', data, e);
+                        console.warn('[AI] 解析失败的原始数据:', rawData);
                     }
                 }
             }

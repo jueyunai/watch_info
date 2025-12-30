@@ -201,12 +201,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           res.setHeader('Connection', 'keep-alive');
 
           const reader = response.body.getReader();
-          const decoder = new TextDecoder();
 
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            res.write(decoder.decode(value));
+            res.write(value); // 👈 直接写入二进制块，不进行 decode，确保 SSE 格式不被破坏
           }
           res.end();
           return;
