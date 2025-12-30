@@ -660,17 +660,20 @@ async function generateAIInsight(forceRefresh = false) {
             );
             content = response.content || response.reasoningContent || '';
         } else {
-            // 生产环境：走后端代理（支持模型切换）
+            // 生产环境：走后端代理（使用流式响应）
             const providers = getProviderPriority();
             const provider = providers[currentProviderIndex];
-            console.log(`[AI] 生产环境使用模型: ${provider}`);
+            console.log(`[AI] 生产环境使用模型: ${provider}（流式响应）`);
 
             const dataInput = generateLLMInput(currentNickname, currentStats, currentReviews, currentPosts, 2025);
+
+            // 使用流式响应
             const response = await fetch('/api/llm', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    provider, // 指定使用的厂商
+                    provider,
+                    stream: true, // 启用流式响应
                     messages: [
                         { role: 'system', content: ANNUAL_SYSTEM_PROMPT },
                         { role: 'user', content: ANNUAL_USER_PROMPT(dataInput) },
@@ -683,9 +686,48 @@ async function generateAIInsight(forceRefresh = false) {
                 throw new Error(error.error || 'AI 生成失败');
             }
 
-            const data = await response.json();
-            console.log(`[AI] 实际使用厂商: ${data._provider || provider}`);
-            content = data.choices?.[0]?.message?.content || '';
+            // 处理流式响应
+            const reader = response.body?.getReader();
+            if (!reader) {
+                throw new Error('无法读取响应流');
+            }
+
+            const decoder = new TextDecoder();
+            let fullContent = '';
+
+            // 隐藏加载动画，显示内容区域
+            aiLoading.classList.add('hidden');
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                // 解析 SSE 数据
+                const lines = chunk.split('\n');
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6);
+                        if (data === '[DONE]') continue;
+                        try {
+                            const json = JSON.parse(data);
+                            const delta = json.choices?.[0]?.delta?.content || '';
+                            if (delta) {
+                                fullContent += delta;
+                                // 实时渲染（每次更新都重新渲染整个内容）
+                                aiContent.innerHTML = renderMarkdown(fullContent);
+                                // 滚动到内容底部
+                                aiContent.scrollTop = aiContent.scrollHeight;
+                            }
+                        } catch {
+                            // 忽略解析错误（可能是不完整的 JSON）
+                        }
+                    }
+                }
+            }
+
+            content = fullContent;
+            console.log(`[AI] 流式响应完成，总长度: ${content.length}`);
         }
 
         if (content) {

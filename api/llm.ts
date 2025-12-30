@@ -1,5 +1,37 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+// 允许的来源列表
+const ALLOWED_ORIGINS = [
+  // 生产环境
+  'https://watcha.jueyunai.com',
+  'https://watch-info.vercel.app',
+  // 开发环境
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+];
+
+// 验证请求来源
+function isRequestAllowed(req: VercelRequest): { allowed: boolean; reason?: string } {
+  const origin = req.headers.origin || '';
+  const referer = req.headers.referer || '';
+
+  // 检查 Origin
+  const isOriginAllowed = ALLOWED_ORIGINS.includes(origin);
+
+  // 检查 Referer（某些场景下 Origin 可能为空）
+  const isRefererAllowed = ALLOWED_ORIGINS.some(o => referer.startsWith(o));
+
+  if (isOriginAllowed || isRefererAllowed) {
+    return { allowed: true };
+  }
+
+  return {
+    allowed: false,
+    reason: `origin=${origin}, referer=${referer}`
+  };
+}
+
 // 支持的 LLM 厂商
 type LLMProvider = 'minimax' | 'zhipu' | 'deepseek' | 'qwen' | 'openai';
 
@@ -55,39 +87,69 @@ function buildUrl(baseUrl: string): string {
 
 // 调用单个厂商
 async function callProvider(config: LLMConfig, messages: any[], stream: boolean) {
-  const response = await fetch(buildUrl(config.baseUrl), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${config.apiKey}`,
-    },
-    body: JSON.stringify({
-      model: config.model,
-      messages,
-      max_tokens: 4096,
-      temperature: 0.7,
-      stream,
-    }),
-  });
+  // 使用 AbortController 设置超时（流式响应应该很快开始返回数据）
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒无响应则切换厂商
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`${config.model} 调用失败 (${response.status}): ${error}`);
+  try {
+    const response = await fetch(buildUrl(config.baseUrl), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: config.model,
+        messages,
+        max_tokens: 1500, // 减少 token 数量，加快响应
+        temperature: 0.7,
+        stream,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`${config.model} 调用失败 (${response.status}): ${error}`);
+    }
+
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`${config.model} 请求超时`);
+    }
+    throw error;
   }
-
-  return response;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // CORS
+  const origin = req.headers.origin || '';
+
+  // 🔒 动态设置 CORS（只对允许的来源设置）
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
+  // OPTIONS 预检请求放行
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
+  }
+
+  // 🔒 验证请求来源（非 OPTIONS 请求）
+  const { allowed, reason } = isRequestAllowed(req);
+  if (!allowed) {
+    console.warn(`[LLM] 拒绝非法请求: ${reason}`);
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: '请从官方页面访问'
+    });
   }
 
   if (req.method !== 'POST') {
