@@ -33,9 +33,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     });
 
-    const data = await response.json();
-    
-    res.status(response.status).json(data);
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+      res.status(response.status).json(data);
+    } else {
+      const text = await response.text();
+      console.warn('Upstream returned non-JSON:', response.status, text.slice(0, 100));
+      res.status(response.status).send(text);
+    }
   } catch (error) {
     console.error('Proxy error:', error);
     res.status(500).json({ 
