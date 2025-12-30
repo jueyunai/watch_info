@@ -797,6 +797,8 @@ a:hover {
   font-weight: 600;
   font-size: 0.95rem;
   color: var(--ink);
+  text-align: center;
+  width: 100%;
 }
 
 .qr-frame {
@@ -1571,11 +1573,39 @@ body.annual-v7.poster-mode .report-container {
   box-shadow: 0 40px 90px rgba(18, 24, 20, 0.2), 0 0 0 12px rgba(58, 175, 120, 0.12);
 }
 
-/* Fix for html2canvas crash in WeChat: remove complex repeating gradients */
+/* ========================================
+   Poster Mode: 使用预渲染纹理替代复杂 CSS 渐变
+   解决微信 WebView 中 html2canvas createPattern 错误
+   ======================================== */
+
+/* 替代 body::after 噪点纹理 */
+body.poster-mode::after {
+  background-image: url('/textures/noise-texture.png') !important;
+  background-repeat: repeat !important;
+  background-size: 120px 120px !important;
+}
+
+/* 替代 body.annual-v7::after 网格纹理 */
+body.annual-v7.poster-mode::after {
+  background-image: url('/textures/grid-texture.png') !important;
+  background-repeat: repeat !important;
+  background-size: 54px 54px !important;
+}
+
+/* 替代 .finale-qr::after 渐变背景 */
+body.poster-mode .finale-qr::after,
 body.annual-v7.poster-mode .finale-qr::after {
-  background: rgba(58, 175, 120, 0.05);
-  /* Simplified background */
-  background-image: none;
+  background: url('/textures/finale-qr-bg.png') center/cover no-repeat !important;
+  background-image: url('/textures/finale-qr-bg.png') !important;
+  opacity: 0.32;
+}
+
+/* 替代 .cover-section::after 高光效果 */
+body.poster-mode .cover-section::after,
+body.annual-v7.poster-mode .cover-section::after {
+  background: url('/textures/cover-glow.png') center/cover no-repeat !important;
+  background-image: url('/textures/cover-glow.png') !important;
+  opacity: 0.8;
 }
 
 body.annual-v7 .finale-note {
