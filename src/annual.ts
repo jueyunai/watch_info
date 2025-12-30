@@ -18,6 +18,12 @@ if (mobileStyleParam === 'compact') {
 } else {
     document.body.classList.add('mobile-poster');
 }
+const reportStyleParam = searchParams.get('report') || searchParams.get('reportStyle');
+if (reportStyleParam === 'flat' || reportStyleParam === 'scroll' || reportStyleParam === 'film') {
+    document.body.classList.add(`report-${reportStyleParam}`);
+} else {
+    document.body.classList.add('report-scroll');
+}
 
 // DOM 元素 - 入口页
 const urlInput = document.getElementById('url-input') as HTMLInputElement;

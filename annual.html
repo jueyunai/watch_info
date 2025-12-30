@@ -80,9 +80,16 @@
     <div id="report-page" class="page report-page hidden">
       <div class="report-shell">
         <div class="report-marquee" aria-hidden="true">
-          <span>WATCHA 2025 ANNUAL ·</span>
-          <span>WATCHA 2025 ANNUAL ·</span>
-          <span>WATCHA 2025 ANNUAL ·</span>
+          <div class="marquee-track">
+            <span>WATCHA 2025 ANNUAL · Powered by 志云. Thanks to 神奇小喷菇AIGC, 认知少女</span>
+            <span>·</span>
+            <span>WATCHA 2025 ANNUAL · Powered by 志云. Thanks to 神奇小喷菇AIGC, 认知少女</span>
+            <span>·</span>
+            <span>WATCHA 2025 ANNUAL · Powered by 志云. Thanks to 神奇小喷菇AIGC, 认知少女</span>
+            <span>·</span>
+            <span>WATCHA 2025 ANNUAL · Powered by 志云. Thanks to 神奇小喷菇AIGC, 认知少女</span>
+            <span>·</span>
+          </div>
         </div>
 
         <div id="report-container" class="report-container">
@@ -207,8 +214,10 @@
                 </div>
               </div>
               <div class="finale-qr">
-                <p>扫码生成你的年度报告</p>
-                <img src="/qrcode.png" alt="二维码" class="qr-image" />
+                <p class="qr-title">扫码生成你的年度报告</p>
+                <div class="qr-frame">
+                  <img src="/qrcode.png" alt="二维码" class="qr-image" />
+                </div>
               </div>
             </div>
           </section>
@@ -217,7 +226,7 @@
         <div class="report-actions">
           <button id="download-poster-btn" class="primary-btn">分享海报</button>
           <button id="show-prompt-btn" class="secondary-btn">📝 年报配方</button>
-          <button id="back-btn" class="secondary-btn">← 重新生成</button>
+          <button id="back-btn" class="secondary-btn"><span class="btn-icon">⟳</span>重新生成</button>
         </div>
       </div>
     </div>
