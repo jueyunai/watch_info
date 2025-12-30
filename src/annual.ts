@@ -700,6 +700,7 @@ async function generateAIInsight(forceRefresh = false) {
 
             const decoder = new TextDecoder();
             let fullContent = '';
+            let lineBuffer = ''; // 👈 用于存储未完成的行
 
             // 隐藏加载动画，显示内容区域
             aiLoading.classList.add('hidden');
@@ -708,26 +709,34 @@ async function generateAIInsight(forceRefresh = false) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunk = decoder.decode(value, { stream: true });
-                // 解析 SSE 数据
-                const lines = chunk.split('\n');
+                // 将新接收的文字追加到缓冲区
+                lineBuffer += decoder.decode(value, { stream: true });
+
+                // 按行分割并处理
+                const lines = lineBuffer.split('\n');
+                // 最后一行可能是不完整的（没有换行符），留到下一个数据块
+                lineBuffer = lines.pop() || '';
+
                 for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const data = line.slice(6);
-                        if (data === '[DONE]') continue;
-                        try {
-                            const json = JSON.parse(data);
-                            const delta = json.choices?.[0]?.delta?.content || '';
-                            if (delta) {
-                                fullContent += delta;
-                                // 实时渲染（每次更新都重新渲染整个内容）
-                                aiContent.innerHTML = renderMarkdown(fullContent);
-                                // 滚动到内容底部
-                                aiContent.scrollTop = aiContent.scrollHeight;
-                            }
-                        } catch {
-                            // 忽略解析错误（可能是不完整的 JSON）
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine || !trimmedLine.startsWith('data: ')) continue;
+
+                    const data = trimmedLine.slice(6);
+                    if (data === '[DONE]') continue;
+
+                    try {
+                        const json = JSON.parse(data);
+                        const delta = json.choices?.[0]?.delta?.content || '';
+                        if (delta) {
+                            fullContent += delta;
+                            // 实时渲染内容
+                            aiContent.innerHTML = renderMarkdown(fullContent);
+                            // 滚动到内容底部
+                            aiContent.scrollTop = aiContent.scrollHeight;
                         }
+                    } catch (e) {
+                        // 忽略解析错误（可能是不完整的 JSON）
+                        console.debug('[AI] SSE 解析跳过:', data);
                     }
                 }
             }
