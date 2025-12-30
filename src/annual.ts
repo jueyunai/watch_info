@@ -506,6 +506,15 @@ async function downloadPoster() {
             useCORS: true,
             allowTaint: true,
             logging: false,
+            // 禁用外部资源加载，避免 CORS 超时
+            foreignObjectRendering: false,
+            removeContainer: true,
+            // 忽略跨域字体，使用系统字体回退
+            onclone: (clonedDoc) => {
+                // 移除外部字体引用，加速渲染
+                const links = clonedDoc.querySelectorAll('link[href*="tos.watcha.cn"]');
+                links.forEach(link => link.remove());
+            }
         });
 
         posterDataUrl = canvas.toDataURL('image/png');
