@@ -39,6 +39,7 @@ interface LLMConfig {
   apiKey: string;
   baseUrl: string;
   model: string;
+  maxTokens?: number;
 }
 
 // 从环境变量获取厂商配置
@@ -101,7 +102,7 @@ async function callProvider(config: LLMConfig, messages: any[], stream: boolean,
       body: JSON.stringify({
         model: config.model,
         messages,
-        max_tokens: 1500, // 减少 token 数量，加快响应
+        max_tokens: config.maxTokens || 4000, // 增加 token 数量，支持长报告
         temperature: 0.7,
         stream,
       }),
@@ -157,7 +158,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { messages, stream = false, provider: requestedProvider } = req.body;
+    const { messages, stream = false, provider: requestedProvider, max_tokens } = req.body;
 
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'Invalid messages' });
@@ -189,10 +190,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       try {
-        // 智谱通常首字较慢，给 10s，其他给 5s
-        const timeoutMs = provider === 'zhipu' ? 10000 : 5000;
+        // 智谱通常首字较慢，给 30s，其他给 10s
+        const timeoutMs = provider === 'zhipu' ? 30000 : 10000;
         console.log(`[LLM] 尝试: ${provider} / ${config.model} (超时: ${timeoutMs}ms)`);
-        const response = await callProvider(config, messages, stream, timeoutMs);
+
+        // 合并配置
+        const finalConfig = {
+          ...config,
+          maxTokens: max_tokens || config.maxTokens
+        };
+
+        const response = await callProvider(finalConfig, messages, stream, timeoutMs);
 
         // 流式响应
         if (stream && response.body) {

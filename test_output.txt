@@ -1,0 +1,47 @@
+=== LLM 厂商连通性测试 ===
+
+测试 minimax...
+  模型: MiniMax-M2.1
+  URL: https://api.minimax.chat/v1/chat/completions
+  ✅ 连接成功 (4047ms)，开始接收流...
+  [数据块 1] 内容预览:
+    data: {"id":"05a2b1cb7d95fcf184e3bf42cd240281","choices":[{"index":0,"delta":{"content":"<think>\n用户用","role":"assistant","name":"MiniMax AI","audio_content":""}}],"created":1767079627,"model":"MiniMax-M2.1","object":"chat.completion.chunk","usage":null,"input_sensitive":false,"output_sensitive":false,"input_sensitive_type":0,"output_sensitive_type":0,"output_sensitive_int":0}
+    
+    
+  [数据块 2] 内容预览:
+    data: {"id":"05a2b1cb7d95fcf184e3bf42cd240281","choices":[{"index":0,"delta":{"content":"中文说\"你好\"，这是一个简单的问候。我应该用中文友好地回应。\n\n根据系统提示，我是MiniMax-M2.1，由MiniMax构建","role":"assistant","name":"MiniMax AI","audio_content":""}}],"created":1767079627,"model":"MiniMax-M2.1","object":"chat.completion.chunk","usage":null,"input_sensitive":false,"output_sensitive":false,"input_sensitive_type":0,"output_sensitive_type":0,"output_sensitive_int":0}
+    
+    
+  流传输结束
+
+测试 zhipu...
+  模型: glm-4.7
+  URL: https://ai.bytenote.net/v1/chat/completions
+  ✅ 连接成功 (3167ms)，开始接收流...
+  [数据块 1] 内容预览:
+    data: {"id":"2025123015271400725644c81e4fb3","created":1767079634,"object":"chat.completion.chunk","model":"glm-4.7","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"1"}}]}
+    
+    
+  [数据块 2] 内容预览:
+    data: {"id":"2025123015271400725644c81e4fb3","created":1767079634,"object":"chat.completion.chunk","model":"glm-4.7","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"."}}]}
+    
+    
+  流传输结束
+
+测试 deepseek...
+  模型: deepseek-reasoner
+  URL: https://api.deepseek.com/v1/chat/completions
+  ✅ 连接成功 (308ms)，开始接收流...
+  [数据块 1] 内容预览:
+    data: {"id":"9f018b06-208c-4ad2-9ea3-f9a6e8ac7db4","object":"chat.completion.chunk","created":1767079635,"model":"deepseek-reasoner","system_fingerprint":"fp_eaab8d114b_prod0820_fp8_kvcache","choices":[{"index":0,"delta":{"role":"assistant","content":null,"reasoning_content":""},"logprobs":null,"finish_reason":null}]}
+    
+    data: {"id":"9f018b06-208c-4ad2-9ea3-f9a6e8ac7db4","object":"chat.completion.chunk","created":1767079635,"model":"deepseek-reasoner","system_fingerprint":"fp_eaab8d114b_prod0820_fp8_kvcache","choices":[{"index":0,"delta":{"content":null,"reasoning_content":"哦"},"logprobs":null,"finish_reason":null}]}
+    
+    
+  [数据块 2] 内容预览:
+    data: {"id":"9f018b06-208c-4ad2-9ea3-f9a6e8ac7db4","object":"chat.completion.chunk","created":1767079635,"model":"deepseek-reasoner","system_fingerprint":"fp_eaab8d114b_prod0820_fp8_kvcache","choices":[{"index":0,"delta":{"content":null,"reasoning_content":"，"},"logprobs":null,"finish_reason":null}]}
+    
+    
+  流传输结束
+
+测试完成

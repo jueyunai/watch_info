@@ -25,7 +25,7 @@ export interface ChatResponse {
 // 构建请求 URL（开发环境使用代理）
 function buildUrl(config: LLMConfig): string {
   const isDev = import.meta.env.DEV;
-  
+
   if (isDev) {
     // 开发环境：使用 Vite 代理绕过 CORS
     const proxyMap: Record<string, string> = {
@@ -37,7 +37,7 @@ function buildUrl(config: LLMConfig): string {
       return proxyMap[config.provider];
     }
   }
-  
+
   return config.baseUrl.includes('/chat/completions')
     ? config.baseUrl
     : `${config.baseUrl}/chat/completions`;
@@ -99,7 +99,7 @@ export async function chatWithFallback(
   providers?: LLMProvider[]
 ): Promise<ChatResponse> {
   const providerList = providers || getProviderPriority();
-  
+
   for (const provider of providerList) {
     try {
       console.log(`[LLM] 尝试厂商: ${provider}`);
@@ -111,7 +111,7 @@ export async function chatWithFallback(
       }
     }
   }
-  
+
   throw new Error('所有 LLM 厂商调用失败');
 }
 
@@ -130,5 +130,8 @@ export async function ask(
   messages.push({ role: 'user', content: prompt });
 
   const response = await chat(messages, options, provider);
+  if (response.reasoningContent && response.content) {
+    return `<think>${response.reasoningContent}</think>${response.content}`;
+  }
   return response.content || response.reasoningContent || '';
 }

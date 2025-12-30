@@ -664,7 +664,12 @@ async function generateAIInsight(forceRefresh = false) {
                 { maxTokens: 4096 },
                 provider
             );
-            content = response.content || response.reasoningContent || '';
+
+            if (response.reasoningContent && response.content) {
+                content = `<think>${response.reasoningContent}</think>${response.content}`;
+            } else {
+                content = response.content || response.reasoningContent || '';
+            }
         } else {
             // 生产环境：走后端代理（使用流式响应）
             const providers = getProviderPriority();
@@ -679,6 +684,7 @@ async function generateAIInsight(forceRefresh = false) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     provider,
+                    max_tokens: 4000,
                     stream: true, // 启用流式响应
                     messages: [
                         { role: 'system', content: ANNUAL_SYSTEM_PROMPT },
@@ -701,6 +707,7 @@ async function generateAIInsight(forceRefresh = false) {
             const decoder = new TextDecoder();
             let fullContent = '';
             let lineBuffer = ''; // 👈 用于存储未完成的行
+            let manuallyAddedThink = false; // 👈 增加 flag，用来标记是否是我们手动开启了 <think>
 
             // 隐藏加载动画，显示内容区域
             aiLoading.classList.add('hidden');
@@ -731,10 +738,26 @@ async function generateAIInsight(forceRefresh = false) {
                         if (!choice) continue;
 
                         // 兼容多种内容字段 (OpenAI 标准 vs 推理模型标准)
-                        const delta = choice.delta?.content || choice.delta?.reasoning_content || '';
+                        const contentDelta = choice.delta?.content || '';
+                        const reasoningDelta = choice.delta?.reasoning_content || '';
 
-                        if (delta) {
-                            fullContent += delta;
+                        if (reasoningDelta) {
+                            // 对于主动提供 reasoning_content 的模型（如 DeepSeek, GLM），我们手动包裹 <think>
+                            if (!manuallyAddedThink && !fullContent.includes('<think>')) {
+                                fullContent += '<think>';
+                                manuallyAddedThink = true;
+                            }
+                            fullContent += reasoningDelta;
+                        } else if (contentDelta) {
+                            // 只有当我们之前是因为 reasoningDelta 而手动开启了 <think> 时，才在这里尝试闭合它
+                            if (manuallyAddedThink && !fullContent.includes('</think>')) {
+                                fullContent += '</think>';
+                                manuallyAddedThink = false;
+                            }
+                            fullContent += contentDelta;
+                        }
+
+                        if (contentDelta || reasoningDelta) {
                             aiContent.innerHTML = renderMarkdown(fullContent);
                             aiContent.scrollTop = aiContent.scrollHeight;
                         }
@@ -742,6 +765,11 @@ async function generateAIInsight(forceRefresh = false) {
                         console.warn('[AI] 解析失败的原始数据:', rawData);
                     }
                 }
+            }
+
+            // 结束后确保 <think> 标签闭合
+            if (fullContent.includes('<think>') && !fullContent.includes('</think>')) {
+                fullContent += '</think>';
             }
 
             content = fullContent;
@@ -768,19 +796,22 @@ async function generateAIInsight(forceRefresh = false) {
 
 // 简单的 Markdown 渲染
 function renderMarkdown(text: string): string {
-    // 移除思考过程（<think>...</think> 或类似格式）
-    text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    // 1. 提取并暂时移除思考过程（<think>...</think>）
+    const thinkingBlocks: string[] = [];
+    let processedText = text.replace(/<think>([\s\S]*?)(?:<\/think>|$)/gi, (_, p1) => {
+        const index = thinkingBlocks.length;
+        thinkingBlocks.push(`<div class="ai-thinking"><div class="ai-thought-content">${p1.trim()}</div></div>`);
+        return `\n\n__THINKING_BLOCK_${index}__\n\n`;
+    });
 
-    // 统一引号：先把所有引号变成统一格式，再成对替换
-    // 第一步：所有左引号类型 → 临时标记 L，所有右引号类型 → 临时标记 R
-    // 统一引号：所有双引号类型 → 中文双引号""（奇数左引号，偶数右引号）
+    // 2. 统一引号
     let quoteCount = 0;
-    text = text.replace(/["""""「」]/g, () => {
+    processedText = processedText.replace(/["""""「」]/g, () => {
         quoteCount++;
         return quoteCount % 2 === 1 ? '"' : '"';
     });
 
-    const lines = text.split('\n');
+    const lines = processedText.split('\n');
     const html: string[] = [];
     let paragraph: string[] = [];
     let inList = false;
@@ -792,7 +823,13 @@ function renderMarkdown(text: string): string {
 
     const flushParagraph = () => {
         if (!paragraph.length) return;
-        html.push(`<p>${paragraph.join('<br>')}</p>`);
+        const pContent = paragraph.join('<br>');
+        // 检查是否包含占位符，如果是占位符则不包裹 p
+        if (pContent.includes('__THINKING_BLOCK_')) {
+            html.push(pContent);
+        } else {
+            html.push(`<p>${pContent}</p>`);
+        }
         paragraph = [];
     };
 
@@ -804,6 +841,16 @@ function renderMarkdown(text: string): string {
 
     for (const line of lines) {
         const trimmed = line.trim();
+
+        // 处理占位符
+        if (trimmed.startsWith('__THINKING_BLOCK_') && trimmed.endsWith('__')) {
+            flushParagraph();
+            closeList();
+            const index = parseInt(trimmed.match(/\d+/)![0]);
+            html.push(thinkingBlocks[index]);
+            continue;
+        }
+
         if (!trimmed) {
             flushParagraph();
             closeList();
@@ -852,7 +899,14 @@ function renderMarkdown(text: string): string {
 
     flushParagraph();
     closeList();
-    return html.join('');
+
+    // 最后再次兜底替换（防止某些 edge cases）
+    let finalHtml = html.join('');
+    thinkingBlocks.forEach((block, i) => {
+        finalHtml = finalHtml.replace(`__THINKING_BLOCK_${i}__`, block);
+    });
+
+    return finalHtml;
 }
 
 // 事件绑定

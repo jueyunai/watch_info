@@ -732,6 +732,43 @@ a:hover {
   padding: 1rem;
 }
 
+/* AI Thinking Block */
+.ai-thinking {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  background: rgba(20, 24, 21, 0.03);
+  border-left: 4px solid var(--gold);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-thinking::before {
+  content: "思考过程";
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+}
+
+.ai-thought-content {
+  font-style: italic;
+  line-height: 1.6;
+  opacity: 0.85;
+  white-space: pre-wrap;
+}
+
+.ai-thought-content code {
+  font-style: normal;
+  background: rgba(20, 24, 21, 0.05);
+}
+
 #generate-ai-btn {
   display: block;
   margin: 1rem auto 0;
