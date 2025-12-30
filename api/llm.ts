@@ -86,10 +86,10 @@ function buildUrl(baseUrl: string): string {
 }
 
 // 调用单个厂商
-async function callProvider(config: LLMConfig, messages: any[], stream: boolean) {
+async function callProvider(config: LLMConfig, messages: any[], stream: boolean, timeoutMs: number = 5000) {
   // 使用 AbortController 设置超时（流式响应应该很快开始返回数据）
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒无响应则切换厂商
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const response = await fetch(buildUrl(config.baseUrl), {
@@ -175,6 +175,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log(`[LLM] 厂商优先级: ${providers.join(' → ')}`);
 
+    // 记录请求体大小
+    const promptLength = JSON.stringify(messages).length;
+    console.log(`[LLM] 任务开始, 消息长度: ${promptLength} chars`);
+
     // 依次尝试各厂商
     let lastError: Error | null = null;
     for (const provider of providers) {
@@ -185,8 +189,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       try {
-        console.log(`[LLM] 尝试: ${provider} / ${config.model}`);
-        const response = await callProvider(config, messages, stream);
+        // 智谱通常首字较慢，给 10s，其他给 5s
+        const timeoutMs = provider === 'zhipu' ? 10000 : 5000;
+        console.log(`[LLM] 尝试: ${provider} / ${config.model} (超时: ${timeoutMs}ms)`);
+        const response = await callProvider(config, messages, stream, timeoutMs);
 
         // 流式响应
         if (stream && response.body) {
