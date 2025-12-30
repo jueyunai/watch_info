@@ -202,8 +202,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 确定要尝试的厂商列表
     let providers: LLMProvider[];
     if (requestedProvider) {
-      // 前端指定了厂商，只用这一个
-      providers = [requestedProvider as LLMProvider];
+      // 前端指定了首选厂商，放在最前面，其他厂商作为 fallback
+      const allProviders = getProviderPriority();
+      const preferred = requestedProvider as LLMProvider;
+      providers = [preferred, ...allProviders.filter(p => p !== preferred)];
     } else {
       // 使用优先级列表
       providers = getProviderPriority();
