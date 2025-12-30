@@ -1,5 +1,5 @@
 // LLM 调用服务
-import { getLLMConfig, validateLLMConfig, getProviderPriority, type LLMConfig, type LLMProvider } from '../config/llm';
+import { getLLMConfig, validateLLMConfig, getProviderPriority, needsThinkingMode, getThinkingBudget, needsThinkingBudgetOnly, type LLMConfig, type LLMProvider } from '../config/llm';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -32,6 +32,9 @@ function buildUrl(config: LLMConfig): string {
       zhipu: '/llm-proxy/zhipu/v1/chat/completions',
       minimax: '/llm-proxy/minimax/v1/chat/completions',
       deepseek: '/llm-proxy/deepseek/v1/chat/completions',
+      kimi: '/llm-proxy/kimi/v1/chat/completions',
+      'ms-deepseek': '/llm-proxy/ms-deepseek/v1/chat/completions',
+      'ms-qwen': '/llm-proxy/ms-qwen/v1/chat/completions',
     };
     if (proxyMap[config.provider]) {
       return proxyMap[config.provider];
@@ -58,18 +61,38 @@ export async function chat(
   console.log(`[LLM] 调用模型: ${config.provider} / ${config.model}`);
   console.log(`[LLM] API URL: ${buildUrl(config)}`);
 
+  // 构建请求体
+  const requestBody: Record<string, any> = {
+    model: config.model,
+    messages,
+    max_tokens: options.maxTokens ?? 2048,
+    temperature: options.temperature ?? 0.7,
+  };
+
+  // 推理模型需要开启思考模式
+  if (needsThinkingMode(config.provider)) {
+    requestBody.enable_thinking = true;
+    const budget = getThinkingBudget(config.provider);
+    if (budget) {
+      requestBody.thinking_budget = budget;
+    }
+  }
+
+  // Kimi (SiliconFlow) 只需要 thinking_budget，不需要 enable_thinking
+  if (needsThinkingBudgetOnly(config.provider)) {
+    const budget = getThinkingBudget(config.provider);
+    if (budget) {
+      requestBody.thinking_budget = budget;
+    }
+  }
+
   const response = await fetch(buildUrl(config), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${config.apiKey}`,
     },
-    body: JSON.stringify({
-      model: config.model,
-      messages,
-      max_tokens: options.maxTokens ?? 2048,
-      temperature: options.temperature ?? 0.7,
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {

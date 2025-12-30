@@ -33,13 +33,15 @@ function isRequestAllowed(req: VercelRequest): { allowed: boolean; reason?: stri
 }
 
 // 支持的 LLM 厂商
-type LLMProvider = 'minimax' | 'zhipu' | 'deepseek' | 'qwen' | 'openai';
+type LLMProvider = 'minimax' | 'zhipu' | 'deepseek' | 'qwen' | 'openai' | 'kimi' | 'ms-deepseek' | 'ms-qwen';
 
 interface LLMConfig {
   apiKey: string;
   baseUrl: string;
   model: string;
   maxTokens?: number;
+  needsThinking?: boolean;  // 是否需要开启思考模式
+  thinkingBudget?: number;  // 思考预算（控制思考链长度）
 }
 
 // 从环境变量获取厂商配置
@@ -59,6 +61,7 @@ function getProviderConfig(provider: LLMProvider): LLMConfig | null {
       apiKey: process.env.VITE_DEEPSEEK_API_KEY || '',
       baseUrl: process.env.VITE_DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1',
       model: process.env.VITE_DEEPSEEK_MODEL || 'deepseek-chat',
+      needsThinking: true,
     },
     qwen: {
       apiKey: process.env.VITE_QWEN_API_KEY || '',
@@ -69,6 +72,25 @@ function getProviderConfig(provider: LLMProvider): LLMConfig | null {
       apiKey: process.env.VITE_OPENAI_API_KEY || '',
       baseUrl: process.env.VITE_OPENAI_BASE_URL || 'https://api.openai.com/v1',
       model: process.env.VITE_OPENAI_MODEL || 'gpt-4o',
+    },
+    kimi: {
+      apiKey: process.env.VITE_KIMI_API_KEY || '',
+      baseUrl: process.env.VITE_KIMI_BASE_URL || 'https://api.moonshot.cn/v1',
+      model: process.env.VITE_KIMI_MODEL || 'moonshot-v1-8k',
+      needsThinking: false,  // Kimi-K2-Thinking 不支持 enable_thinking
+      thinkingBudget: 2048,  // 只使用 thinking_budget 控制思考链长度
+    },
+    'ms-deepseek': {
+      apiKey: process.env.VITE_MS_DEEPSEEK_API_KEY || '',
+      baseUrl: process.env.VITE_MS_DEEPSEEK_BASE_URL || 'https://api-inference.modelscope.cn/v1',
+      model: process.env.VITE_MS_DEEPSEEK_MODEL || 'deepseek-ai/DeepSeek-R1-0528',
+      needsThinking: true,
+    },
+    'ms-qwen': {
+      apiKey: process.env.VITE_MS_QWEN_API_KEY || '',
+      baseUrl: process.env.VITE_MS_QWEN_BASE_URL || 'https://api-inference.modelscope.cn/v1',
+      model: process.env.VITE_MS_QWEN_MODEL || 'Qwen/Qwen3-235B-A22B-Instruct-2507',
+      needsThinking: true,
     },
   };
 
@@ -92,6 +114,25 @@ async function callProvider(config: LLMConfig, messages: any[], stream: boolean,
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
+  // 构建请求体
+  const requestBody: Record<string, any> = {
+    model: config.model,
+    messages,
+    max_tokens: config.maxTokens || 4000, // 增加 token 数量，支持长报告
+    temperature: 0.7,
+    stream,
+  };
+
+  // 推理模型需要开启思考模式
+  if (config.needsThinking) {
+    requestBody.enable_thinking = true;
+  }
+
+  // 添加 thinking_budget（无论是否开启 enable_thinking）
+  if (config.thinkingBudget) {
+    requestBody.thinking_budget = config.thinkingBudget;
+  }
+
   try {
     const response = await fetch(buildUrl(config.baseUrl), {
       method: 'POST',
@@ -99,13 +140,7 @@ async function callProvider(config: LLMConfig, messages: any[], stream: boolean,
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${config.apiKey}`,
       },
-      body: JSON.stringify({
-        model: config.model,
-        messages,
-        max_tokens: config.maxTokens || 4000, // 增加 token 数量，支持长报告
-        temperature: 0.7,
-        stream,
-      }),
+      body: JSON.stringify(requestBody),
       signal: controller.signal,
     });
 

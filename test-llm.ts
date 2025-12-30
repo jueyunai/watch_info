@@ -22,6 +22,12 @@ const providers = [
     key: process.env.VITE_DEEPSEEK_API_KEY,
     model: process.env.VITE_DEEPSEEK_MODEL,
   },
+  {
+    name: 'kimi',
+    url: process.env.VITE_KIMI_BASE_URL,
+    key: process.env.VITE_KIMI_API_KEY,
+    model: process.env.VITE_KIMI_MODEL,
+  },
 ];
 
 async function testProvider(p: typeof providers[0]) {
@@ -47,6 +53,8 @@ async function testProvider(p: typeof providers[0]) {
         messages: [{ role: 'user', content: '你好' }],
         max_tokens: 50,
         stream: true,
+        // deepseek 启用思考模式
+        ...(p.name === 'deepseek' && { enable_thinking: true }),
       }),
     });
 

@@ -1,0 +1,20 @@
+{
+  "testId": "benchmark-2025-12-30T15-53-11",
+  "testedAt": "2025-12-30T15:53:11.769Z",
+  "dataSource": {
+    "username": "zhiyun",
+    "reviewCount": 95,
+    "postCount": 103
+  },
+  "results": [
+    {
+      "provider": "kimi",
+      "model": "moonshotai/Kimi-K2-Thinking",
+      "success": false,
+      "error": "API 请求失败 (400): {\"code\":20015,\"message\":\"Value error, current model does not support parameter `enable_thinking`.\",\"data\":null}",
+      "reasoningFormat": "none",
+      "testedAt": "2025-12-30T15:53:11.375Z"
+    }
+  ],
+  "summary": {}
+}

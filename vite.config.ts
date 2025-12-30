@@ -32,6 +32,21 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/llm-proxy\/deepseek/, ''),
       },
+      '/llm-proxy/kimi': {
+        target: 'https://api.siliconflow.cn',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/llm-proxy\/kimi/, ''),
+      },
+      '/llm-proxy/ms-deepseek': {
+        target: 'https://api-inference.modelscope.cn',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/llm-proxy\/ms-deepseek/, ''),
+      },
+      '/llm-proxy/ms-qwen': {
+        target: 'https://api-inference.modelscope.cn',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/llm-proxy\/ms-qwen/, ''),
+      },
     },
   },
 });
