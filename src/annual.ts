@@ -486,6 +486,7 @@ async function downloadPoster() {
             backgroundColor,
             scale: 2,
             useCORS: true,
+            allowTaint: true,
             logging: false,
         });
 
@@ -496,7 +497,8 @@ async function downloadPoster() {
 
     } catch (error) {
         console.error('生成海报失败:', error);
-        alert('生成海报失败，请稍后重试');
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        alert(`生成海报失败: ${errorMsg}`);
         closePosterPreview();
     } finally {
         document.body.classList.remove('poster-mode');
