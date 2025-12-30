@@ -2,6 +2,15 @@
    观猹年度报告样式 - V7 合并版
    ======================================== */
 
+/* === 本地字体 === */
+@font-face {
+  font-family: 'Bebas Neue';
+  src: url('/fonts/bebas-neue-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* === 基础变量 === */
 :root {
   --paper: #f5efe6;
@@ -732,9 +741,9 @@ a:hover {
   padding: 1rem;
 }
 
-/* AI Thinking Block - 默认隐藏 */
+/* AI Thinking Block - 默认隐藏，流式输出时显示 */
 .ai-thinking {
-  display: none;  /* 隐藏思考过程 */
+  display: none;  /* 默认隐藏 */
   margin: 1.5rem 0;
   padding: 1.25rem;
   background: rgba(20, 24, 21, 0.03);
@@ -744,6 +753,11 @@ a:hover {
   color: var(--ink-soft);
   position: relative;
   overflow: hidden;
+}
+
+/* 流式输出时显示思考过程 */
+.ai-content.streaming .ai-thinking {
+  display: block;
 }
 
 .ai-thinking::before {

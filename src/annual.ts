@@ -720,6 +720,7 @@ async function generateAIInsight(forceRefresh = false) {
 
             // 隐藏加载动画，显示内容区域
             aiLoading.classList.add('hidden');
+            aiContent.classList.add('streaming'); // 流式输出时显示思考过程
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -786,6 +787,7 @@ async function generateAIInsight(forceRefresh = false) {
         }
 
         if (content) {
+            aiContent.classList.remove('streaming'); // 流式结束，隐藏思考过程
             aiContent.innerHTML = renderMarkdown(content);
             cacheAIInsight(content);
         } else {
@@ -793,6 +795,7 @@ async function generateAIInsight(forceRefresh = false) {
         }
     } catch (error) {
         console.error('AI 生成失败:', error);
+        aiContent.classList.remove('streaming');
         aiContent.innerHTML = `<p class="ai-error">生成失败: ${error instanceof Error ? error.message : '未知错误'}</p>`;
         generateAiBtn.classList.remove('hidden');
         generateAiBtn.disabled = false;
