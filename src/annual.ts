@@ -839,6 +839,16 @@ function renderMarkdown(text: string): string {
         inList = false;
     };
 
+    let inBlockquote = false;
+    let blockquoteContent: string[] = [];
+
+    const closeBlockquote = () => {
+        if (!inBlockquote) return;
+        html.push(`<blockquote>${blockquoteContent.join('<br>')}</blockquote>`);
+        blockquoteContent = [];
+        inBlockquote = false;
+    };
+
     for (const line of lines) {
         const trimmed = line.trim();
 
@@ -846,6 +856,7 @@ function renderMarkdown(text: string): string {
         if (trimmed.startsWith('__THINKING_BLOCK_') && trimmed.endsWith('__')) {
             flushParagraph();
             closeList();
+            closeBlockquote();
             const index = parseInt(trimmed.match(/\d+/)![0]);
             html.push(thinkingBlocks[index]);
             continue;
@@ -854,12 +865,14 @@ function renderMarkdown(text: string): string {
         if (!trimmed) {
             flushParagraph();
             closeList();
+            closeBlockquote();
             continue;
         }
 
         if (/^#{1,3}\s+/.test(trimmed)) {
             flushParagraph();
             closeList();
+            closeBlockquote();
             if (trimmed.startsWith('### ')) {
                 html.push(`<h4>${inline(trimmed.slice(4))}</h4>`);
             } else if (trimmed.startsWith('## ')) {
@@ -873,16 +886,24 @@ function renderMarkdown(text: string): string {
         if (/^---+$/.test(trimmed)) {
             flushParagraph();
             closeList();
+            closeBlockquote();
             html.push('<hr />');
             continue;
         }
 
-        if (/^>\s+/.test(trimmed)) {
+        if (/^>\s*/.test(trimmed)) {
             flushParagraph();
             closeList();
-            html.push(`<blockquote>${inline(trimmed.replace(/^>\s+/, ''))}</blockquote>`);
+            // 合并连续的引用行
+            if (!inBlockquote) {
+                inBlockquote = true;
+            }
+            blockquoteContent.push(inline(trimmed.replace(/^>\s*/, '')));
             continue;
         }
+
+        // 遇到非引用行时关闭引用块
+        closeBlockquote();
 
         if (/^[-*]\s+/.test(trimmed)) {
             flushParagraph();
@@ -899,6 +920,7 @@ function renderMarkdown(text: string): string {
 
     flushParagraph();
     closeList();
+    closeBlockquote();
 
     // 最后再次兜底替换（防止某些 edge cases）
     let finalHtml = html.join('');
