@@ -13,8 +13,10 @@ import type { Review, Post } from './types';
 
 const searchParams = new URLSearchParams(window.location.search);
 const mobileStyleParam = searchParams.get('mobile') || searchParams.get('mobileStyle');
-if (mobileStyleParam === 'compact' || mobileStyleParam === 'poster') {
-    document.body.classList.add(`mobile-${mobileStyleParam}`);
+if (mobileStyleParam === 'compact') {
+    document.body.classList.add('mobile-compact');
+} else {
+    document.body.classList.add('mobile-poster');
 }
 
 // DOM 元素 - 入口页

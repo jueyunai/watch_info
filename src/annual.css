@@ -767,6 +767,12 @@ a:hover {
   margin-top: 0.35rem;
 }
 
+.qr-image {
+  width: 120px;
+  height: 120px;
+  margin-top: 0.5rem;
+}
+
 .report-actions {
   display: flex;
   flex-wrap: wrap;
