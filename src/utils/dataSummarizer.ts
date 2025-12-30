@@ -26,7 +26,7 @@ function summarizeReview(review: Review): ReviewSummary {
   return {
     date: review.rawUpdateAt?.split('T')[0] || '',
     product: review.productName || '未知产品',
-    excerpt: content,  // 完整内容
+    excerpt: content.length > 300 ? content.slice(0, 300) + '...' : content,
   };
 }
 
@@ -36,26 +36,26 @@ function summarizePost(post: Post): PostSummary {
   return {
     date: post.rawUpdateAt?.split('T')[0] || '',
     title: post.title || '',
-    excerpt: content,  // 完整内容
+    excerpt: content.length > 300 ? content.slice(0, 300) + '...' : content,
   };
 }
 
 // 按月分组数据
 function groupByMonth(reviews: Review[], posts: Post[], year: number): MonthlyData[] {
   const months: MonthlyData[] = [];
-  
+
   for (let m = 1; m <= 12; m++) {
     const monthStr = `${year}-${String(m).padStart(2, '0')}`;
     const monthName = `${m}月`;
-    
+
     const monthReviews = reviews
       .filter(r => r.rawUpdateAt?.startsWith(monthStr))
       .map(summarizeReview);
-    
+
     const monthPosts = posts
       .filter(p => p.rawUpdateAt?.startsWith(monthStr))
       .map(summarizePost);
-    
+
     if (monthReviews.length > 0 || monthPosts.length > 0) {
       months.push({
         month: monthName,
@@ -64,7 +64,7 @@ function groupByMonth(reviews: Review[], posts: Post[], year: number): MonthlyDa
       });
     }
   }
-  
+
   return months;
 }
 
@@ -77,7 +77,7 @@ export function generateLLMInput(
   year: number = 2025
 ): string {
   const monthlyData = groupByMonth(reviews, posts, year);
-  
+
   // 构建数据摘要
   const dataSummary = `
 ## 用户信息
