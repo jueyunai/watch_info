@@ -524,7 +524,7 @@ async function downloadPoster() {
         await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
 
         const canvas = await html2canvas(reportContainer, {
-            backgroundColor: '#f6f8f7',
+            backgroundColor: null, // 透明背景，保留圆角
             scale: 2,
             useCORS: true,
             allowTaint: true,
