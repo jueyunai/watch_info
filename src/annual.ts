@@ -322,7 +322,7 @@ function renderReport(nickname: string, stats: AnnualStats, labels: AchievementL
     // 切换页面
     entryPage.classList.add('hidden');
     reportPage.classList.remove('hidden');
-    
+
     // 滚动到页面顶部
     window.scrollTo(0, 0);
 }
@@ -345,7 +345,7 @@ async function generateReport() {
 
     try {
         generateBtn.disabled = true;
-        
+
         // 检查缓存
         const cachedData = loadCachedUserData(username);
         let allReviews: Review[];
@@ -493,31 +493,29 @@ async function downloadPoster() {
     try {
         // 等待所有图片加载完成
         await waitForImages(reportContainer);
-        
-        // 动态加载 html2canvas
-        const html2canvas = (await import('html2canvas')).default;
+
+        // 动态加载 html-to-image（替代 html2canvas）
+        const { toPng } = await import('html-to-image');
         document.body.classList.add('poster-mode');
         await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-        const backgroundColor = getComputedStyle(document.body).backgroundColor || '#ffffff';
 
-        const canvas = await html2canvas(reportContainer, {
-            backgroundColor,
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            onclone: (clonedDoc) => {
-                // 确保克隆文档中的图片也有尺寸
-                const clonedImages = clonedDoc.querySelectorAll('img');
-                clonedImages.forEach((img) => {
-                    if (!img.naturalWidth) {
-                        img.style.display = 'none';
+        // 使用 html-to-image 生成 PNG
+        posterDataUrl = await toPng(reportContainer, {
+            pixelRatio: 2,
+            cacheBust: true,
+            skipFonts: true, // 跳过字体加载，避免跨域问题
+            filter: (node) => {
+                // 过滤掉可能有问题的元素
+                if (node instanceof HTMLElement) {
+                    // 隐藏无尺寸的图片
+                    if (node.tagName === 'IMG' && !(node as HTMLImageElement).naturalWidth) {
+                        return false;
                     }
-                });
+                }
+                return true;
             }
         });
 
-        posterDataUrl = canvas.toDataURL('image/png');
         posterImage.src = posterDataUrl;
         posterImage.classList.remove('hidden');
         downloadPosterConfirmBtn.disabled = false;
@@ -547,16 +545,16 @@ function closePosterPreview() {
 
 function downloadPosterFromPreview() {
     if (!posterDataUrl) return;
-    
+
     // 检测是否在微信内置浏览器中
     const isWechat = /MicroMessenger/i.test(navigator.userAgent);
-    
+
     if (isWechat) {
         // 微信内无法直接下载，提示用户长按保存
         alert('请长按上方图片，选择"保存图片"');
         return;
     }
-    
+
     const link = document.createElement('a');
     link.download = `观猹2025年报_${currentNickname}.png`;
     link.href = posterDataUrl;
@@ -656,7 +654,7 @@ async function generateAIInsight(forceRefresh = false) {
             const providers = getProviderPriority();
             const provider = providers[currentProviderIndex];
             console.log(`[AI] 使用模型: ${provider}`);
-            
+
             const dataInput = generateLLMInput(currentNickname, currentStats, currentReviews, currentPosts, 2025);
             const response = await chat(
                 [
@@ -672,7 +670,7 @@ async function generateAIInsight(forceRefresh = false) {
             const providers = getProviderPriority();
             const provider = providers[currentProviderIndex];
             console.log(`[AI] 生产环境使用模型: ${provider}`);
-            
+
             const dataInput = generateLLMInput(currentNickname, currentStats, currentReviews, currentPosts, 2025);
             const response = await fetch('/api/llm', {
                 method: 'POST',
@@ -718,7 +716,7 @@ async function generateAIInsight(forceRefresh = false) {
 function renderMarkdown(text: string): string {
     // 移除思考过程（<think>...</think> 或类似格式）
     text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-    
+
     // 统一引号：先把所有引号变成统一格式，再成对替换
     // 第一步：所有左引号类型 → 临时标记 L，所有右引号类型 → 临时标记 R
     // 统一引号：所有双引号类型 → 中文双引号""（奇数左引号，偶数右引号）
@@ -727,7 +725,7 @@ function renderMarkdown(text: string): string {
         quoteCount++;
         return quoteCount % 2 === 1 ? '"' : '"';
     });
-    
+
     const lines = text.split('\n');
     const html: string[] = [];
     let paragraph: string[] = [];

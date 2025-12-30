@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>生成海报纹理图片</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    h1 { margin-bottom: 2rem; }
+    .texture-item {
+      margin-bottom: 2rem;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .texture-item h2 { margin: 0 0 1rem; font-size: 1.2rem; }
+    .preview {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    canvas {
+      border: 1px solid #ddd;
+      background: white;
+    }
+    .download-btn {
+      padding: 0.5rem 1rem;
+      background: #3aaf78;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .download-btn:hover { background: #2d8b5e; }
+    .info { 
+      font-size: 0.85rem; 
+      color: #666; 
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 海报纹理生成器</h1>
+  <p>点击按钮下载对应的纹理图片，然后将它们放到 <code>public/textures/</code> 目录下。</p>
+
+  <div class="texture-item">
+    <h2>1. 噪点纹理 (noise-texture.png)</h2>
+    <div class="preview">
+      <canvas id="noise-canvas" width="120" height="120"></canvas>
+      <div>
+        <button class="download-btn" onclick="downloadCanvas('noise-canvas', 'noise-texture.png')">下载 PNG</button>
+        <p class="info">用于 body::after 的噪点背景<br>尺寸: 120×120px, 可平铺</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="texture-item">
+    <h2>2. 网格纹理 (grid-texture.png)</h2>
+    <div class="preview">
+      <canvas id="grid-canvas" width="54" height="54"></canvas>
+      <div>
+        <button class="download-btn" onclick="downloadCanvas('grid-canvas', 'grid-texture.png')">下载 PNG</button>
+        <p class="info">用于 body.annual-v7::after 的网格背景<br>尺寸: 54×54px, 可平铺</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="texture-item">
+    <h2>3. Finale QR 渐变背景 (finale-qr-bg.png)</h2>
+    <div class="preview">
+      <canvas id="finale-qr-canvas" width="400" height="300"></canvas>
+      <div>
+        <button class="download-btn" onclick="downloadCanvas('finale-qr-canvas', 'finale-qr-bg.png')">下载 PNG</button>
+        <p class="info">用于 .finale-qr::after 的渐变背景<br>尺寸: 400×300px</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="texture-item">
+    <h2>4. Cover Section 高光 (cover-glow.png)</h2>
+    <div class="preview">
+      <canvas id="cover-canvas" width="600" height="400"></canvas>
+      <div>
+        <button class="download-btn" onclick="downloadCanvas('cover-canvas', 'cover-glow.png')">下载 PNG</button>
+        <p class="info">用于 .cover-section::after 的高光效果<br>尺寸: 600×400px</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="texture-item">
+    <h2>5. 斜线纹理 (diagonal-lines.png)</h2>
+    <div class="preview">
+      <canvas id="diagonal-canvas" width="14" height="14"></canvas>
+      <div>
+        <button class="download-btn" onclick="downloadCanvas('diagonal-canvas', 'diagonal-lines.png')">下载 PNG</button>
+        <p class="info">用于 repeating-linear-gradient 替代<br>尺寸: 14×14px, 可平铺</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 1. 噪点纹理
+    function generateNoiseTexture() {
+      const canvas = document.getElementById('noise-canvas');
+      const ctx = canvas.getContext('2d');
+      const { width, height } = canvas;
+      
+      const imageData = ctx.createImageData(width, height);
+      const data = imageData.data;
+      
+      for (let i = 0; i < data.length; i += 4) {
+        const noise = Math.random() * 30; // 噪点强度
+        data[i] = noise;     // R
+        data[i + 1] = noise; // G
+        data[i + 2] = noise; // B
+        data[i + 3] = Math.random() * 25 + 5; // Alpha (5-30)
+      }
+      
+      ctx.putImageData(imageData, 0, 0);
+    }
+
+    // 2. 网格纹理
+    function generateGridTexture() {
+      const canvas = document.getElementById('grid-canvas');
+      const ctx = canvas.getContext('2d');
+      const { width, height } = canvas;
+      
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = 'rgba(18, 24, 20, 0.05)';
+      ctx.lineWidth = 1;
+      
+      // 水平线 (底边)
+      ctx.beginPath();
+      ctx.moveTo(0, height - 0.5);
+      ctx.lineTo(width, height - 0.5);
+      ctx.stroke();
+      
+      // 垂直线 (右边)
+      ctx.beginPath();
+      ctx.moveTo(width - 0.5, 0);
+      ctx.lineTo(width - 0.5, height);
+      ctx.stroke();
+    }
+
+    // 3. Finale QR 渐变背景
+    function generateFinaleQrBg() {
+      const canvas = document.getElementById('finale-qr-canvas');
+      const ctx = canvas.getContext('2d');
+      const { width, height } = canvas;
+      
+      ctx.clearRect(0, 0, width, height);
+      
+      // 第一个 radial-gradient
+      const grad1 = ctx.createRadialGradient(
+        width * 0.12, height * 0.18, 0,
+        width * 0.12, height * 0.18, width * 0.45
+      );
+      grad1.addColorStop(0, 'rgba(116, 215, 173, 0.2)');
+      grad1.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad1;
+      ctx.fillRect(0, 0, width, height);
+      
+      // 第二个 radial-gradient
+      const grad2 = ctx.createRadialGradient(
+        width * 0.9, 0, 0,
+        width * 0.9, 0, width * 0.5
+      );
+      grad2.addColorStop(0, 'rgba(58, 175, 120, 0.18)');
+      grad2.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad2;
+      ctx.fillRect(0, 0, width, height);
+      
+      // 斜线纹理 (简化版)
+      ctx.strokeStyle = 'rgba(18, 24, 20, 0.04)';
+      ctx.lineWidth = 1;
+      for (let i = -height; i < width + height; i += 7) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i + height, height);
+        ctx.stroke();
+      }
+    }
+
+    // 4. Cover Section 高光
+    function generateCoverGlow() {
+      const canvas = document.getElementById('cover-canvas');
+      const ctx = canvas.getContext('2d');
+      const { width, height } = canvas;
+      
+      ctx.clearRect(0, 0, width, height);
+      
+      // radial-gradient(circle at 20% 20%, rgba(116, 215, 173, 0.35), transparent 55%)
+      const grad = ctx.createRadialGradient(
+        width * 0.2, height * 0.2, 0,
+        width * 0.2, height * 0.2, Math.max(width, height) * 0.55
+      );
+      grad.addColorStop(0, 'rgba(116, 215, 173, 0.35)');
+      grad.addColorStop(1, 'transparent');
+      
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    // 5. 斜线纹理 (可平铺)
+    function generateDiagonalLines() {
+      const canvas = document.getElementById('diagonal-canvas');
+      const ctx = canvas.getContext('2d');
+      const { width, height } = canvas;
+      
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = 'rgba(18, 24, 20, 0.05)';
+      ctx.lineWidth = 1;
+      
+      // 绘制 135 度斜线 (从左上到右下)
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(width, height);
+      ctx.stroke();
+      
+      // 为了平铺效果，在角落也画线
+      ctx.beginPath();
+      ctx.moveTo(width, 0);
+      ctx.lineTo(width * 2, height);
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.moveTo(-width, 0);
+      ctx.lineTo(0, height);
+      ctx.stroke();
+    }
+
+    // 下载 Canvas 为 PNG
+    function downloadCanvas(canvasId, filename) {
+      const canvas = document.getElementById(canvasId);
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // 初始化所有纹理
+    generateNoiseTexture();
+    generateGridTexture();
+    generateFinaleQrBg();
+    generateCoverGlow();
+    generateDiagonalLines();
+  </script>
+</body>
+</html>
