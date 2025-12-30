@@ -779,6 +779,8 @@ async function generateAIInsight(forceRefresh = false) {
                             if (manuallyAddedThink && !fullContent.includes('</think>')) {
                                 fullContent += '</think>';
                                 manuallyAddedThink = false;
+                                // 思考过程结束，立即隐藏
+                                aiContent.classList.remove('streaming');
                             }
                             fullContent += contentDelta;
                         }

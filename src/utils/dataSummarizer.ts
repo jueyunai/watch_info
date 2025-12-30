@@ -20,13 +20,19 @@ interface MonthlyData {
   posts: PostSummary[];
 }
 
+// 截断内容：超过600字保留前300+后300，中间省略
+function truncateContent(content: string, maxLen = 600, keepLen = 300): string {
+  if (content.length <= maxLen) return content;
+  return content.slice(0, keepLen) + '\n...[省略]...\n' + content.slice(-keepLen);
+}
+
 // 生成猹评摘要
 function summarizeReview(review: Review): ReviewSummary {
   const content = review.content || '';
   return {
     date: review.rawUpdateAt?.split('T')[0] || '',
     product: review.productName || '未知产品',
-    excerpt: content.length > 300 ? content.slice(0, 300) + '...' : content,
+    excerpt: truncateContent(content),
   };
 }
 
@@ -36,7 +42,7 @@ function summarizePost(post: Post): PostSummary {
   return {
     date: post.rawUpdateAt?.split('T')[0] || '',
     title: post.title || '',
-    excerpt: content.length > 300 ? content.slice(0, 300) + '...' : content,
+    excerpt: truncateContent(content),
   };
 }
 
