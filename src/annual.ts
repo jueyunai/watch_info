@@ -719,24 +719,24 @@ async function generateAIInsight(forceRefresh = false) {
 
                 for (const line of lines) {
                     const trimmedLine = line.trim();
-                    if (!trimmedLine || !trimmedLine.startsWith('data: ')) continue;
+                    if (!trimmedLine || !trimmedLine.startsWith('data:')) continue;
 
-                    const data = trimmedLine.slice(6);
+                    // 兼容 data: {...} 和 data:{...} 两种格式
+                    const data = trimmedLine.replace(/^data:\s*/, '');
                     if (data === '[DONE]') continue;
 
                     try {
                         const json = JSON.parse(data);
+                        // 兼容多种 delta 结构（某些厂商可能结构略有不同）
                         const delta = json.choices?.[0]?.delta?.content || '';
                         if (delta) {
                             fullContent += delta;
-                            // 实时渲染内容
                             aiContent.innerHTML = renderMarkdown(fullContent);
-                            // 滚动到内容底部
                             aiContent.scrollTop = aiContent.scrollHeight;
                         }
                     } catch (e) {
-                        // 忽略解析错误（可能是不完整的 JSON）
-                        console.debug('[AI] SSE 解析跳过:', data);
+                        // 记录解析失败的行，辅助排查厂商差异
+                        console.warn('[AI] 解析单行数据失败:', data, e);
                     }
                 }
             }
