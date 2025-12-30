@@ -234,14 +234,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // 所有厂商都失败
+    console.warn(`[LLM] 所有厂商均告失败，最后错误: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
+
+    // 如果是因为过载/频率限制（429）或者所有厂商都挂了，给一个浪漫的友好提示
     return res.status(500).json({
-      error: '所有 LLM 厂商调用失败',
-      details: lastError?.message,
+      error: '让子弹再飞一会，稍后重试哦～',
+      details: lastError instanceof Error ? lastError.message : String(lastError),
     });
   } catch (error) {
-    console.error('[LLM] 代理错误:', error);
+    console.error('[LLM] 代理执行异常:', error);
     res.status(500).json({
-      error: 'LLM proxy error',
+      error: '让子弹再飞一会，稍后重试哦～',
       message: error instanceof Error ? error.message : 'Unknown error',
     });
   }

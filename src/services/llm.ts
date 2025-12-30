@@ -112,7 +112,7 @@ export async function chatWithFallback(
     }
   }
 
-  throw new Error('所有 LLM 厂商调用失败');
+  throw new Error('让子弹再飞一会，稍后重试哦～');
 }
 
 // 简化调用：单轮对话
