@@ -322,6 +322,9 @@ function renderReport(nickname: string, stats: AnnualStats, labels: AchievementL
     // 切换页面
     entryPage.classList.add('hidden');
     reportPage.classList.remove('hidden');
+    
+    // 滚动到页面顶部
+    window.scrollTo(0, 0);
 }
 
 // 生成报告
@@ -515,6 +518,16 @@ function closePosterPreview() {
 
 function downloadPosterFromPreview() {
     if (!posterDataUrl) return;
+    
+    // 检测是否在微信内置浏览器中
+    const isWechat = /MicroMessenger/i.test(navigator.userAgent);
+    
+    if (isWechat) {
+        // 微信内无法直接下载，提示用户长按保存
+        alert('请长按上方图片，选择"保存图片"');
+        return;
+    }
+    
     const link = document.createElement('a');
     link.download = `观猹2025年报_${currentNickname}.png`;
     link.href = posterDataUrl;
