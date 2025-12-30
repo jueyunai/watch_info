@@ -11,6 +11,12 @@ import { getProviderPriority } from './config/llm';
 import type { AnnualStats, AchievementLabel } from './types/annual';
 import type { Review, Post } from './types';
 
+const searchParams = new URLSearchParams(window.location.search);
+const mobileStyleParam = searchParams.get('mobile') || searchParams.get('mobileStyle');
+if (mobileStyleParam === 'compact' || mobileStyleParam === 'poster') {
+    document.body.classList.add(`mobile-${mobileStyleParam}`);
+}
+
 // DOM 元素 - 入口页
 const urlInput = document.getElementById('url-input') as HTMLInputElement;
 const generateBtn = document.getElementById('generate-btn') as HTMLButtonElement;

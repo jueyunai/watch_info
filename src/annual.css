@@ -1519,3 +1519,359 @@ body.annual-v7 .finale-text {
     width: 56px;
   }
 }
+
+/* Mobile layout variants */
+@media (max-width: 560px) {
+  body.annual-v7.mobile-compact .report-container {
+    padding: 1.25rem;
+    border-radius: 20px;
+  }
+
+  body.annual-v7.mobile-compact .report-section {
+    margin-bottom: 1.6rem;
+  }
+
+  body.annual-v7.mobile-compact .cover-section {
+    padding: 1.4rem 1.3rem 1.6rem;
+    border-radius: 20px;
+  }
+
+  body.annual-v7.mobile-compact .cover-frame {
+    gap: 1.2rem;
+  }
+
+  body.annual-v7.mobile-compact .cover-kicker {
+    font-size: 0.68rem;
+  }
+
+  body.annual-v7.mobile-compact .cover-title {
+    font-size: 2.05rem;
+    line-height: 1.08;
+    margin-top: 0.7rem;
+  }
+
+  body.annual-v7.mobile-compact .cover-subtitle {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  body.annual-v7.mobile-compact .cover-meta {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.68rem;
+  }
+
+  body.annual-v7.mobile-compact .user-info {
+    gap: 0.2rem;
+  }
+
+  body.annual-v7.mobile-compact .nickname {
+    font-size: 1.6rem;
+  }
+
+  body.annual-v7.mobile-compact .labels-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  body.annual-v7.mobile-compact .label-badge {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.72rem;
+    text-align: center;
+  }
+
+  body.annual-v7.mobile-compact .mascot-badge-img {
+    width: 64px;
+    height: 64px;
+    right: 0.6rem;
+    top: 0.6rem;
+  }
+
+  body.annual-v7.mobile-compact .cover-stamp {
+    right: 1rem;
+    bottom: -0.35rem;
+  }
+
+  body.annual-v7.mobile-compact .section-header {
+    margin-bottom: 1rem;
+  }
+
+  body.annual-v7.mobile-compact .section-title {
+    font-size: 1.6rem;
+  }
+
+  body.annual-v7.mobile-compact .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  body.annual-v7.mobile-compact .stat-card {
+    padding: 0.95rem;
+    box-shadow: 0 8px 18px rgba(18, 24, 20, 0.1);
+  }
+
+  body.annual-v7.mobile-compact .stat-top {
+    font-size: 0.85rem;
+  }
+
+  body.annual-v7.mobile-compact .stat-value {
+    font-size: 1.5rem;
+    line-height: 1.05;
+  }
+
+  body.annual-v7.mobile-compact .chart-section,
+  body.annual-v7.mobile-compact .ai-section,
+  body.annual-v7.mobile-compact .footer-section {
+    padding: 1.3rem;
+  }
+
+  body.annual-v7.mobile-compact .chart-shell {
+    padding: 1rem;
+  }
+
+  body.annual-v7.mobile-compact .monthly-chart {
+    height: 190px;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+    scroll-snap-type: x proximity;
+  }
+
+  body.annual-v7.mobile-compact .chart-bar {
+    flex: 0 0 44px;
+    scroll-snap-align: end;
+  }
+
+  body.annual-v7.mobile-compact .bar-label {
+    font-size: 0.62rem;
+  }
+
+  body.annual-v7.mobile-compact .ai-content {
+    font-size: 0.92rem;
+    line-height: 1.75;
+  }
+
+  body.annual-v7.mobile-compact .ai-content h2 {
+    font-size: 1.45rem;
+  }
+
+  body.annual-v7.mobile-compact .ai-content h3 {
+    font-size: 1.1rem;
+  }
+
+  body.annual-v7.mobile-compact .finale-grid {
+    gap: 1.2rem;
+  }
+
+  body.annual-v7.mobile-compact .finale-qr {
+    padding: 1rem;
+  }
+
+  body.annual-v7.mobile-compact .report-actions {
+    margin-top: 1.5rem;
+  }
+}
+
+@media (max-width: 560px) {
+  body.annual-v7.mobile-poster .report-container {
+    padding: 1rem;
+    border-radius: 18px;
+  }
+
+  body.annual-v7.mobile-poster .report-section {
+    margin-bottom: 2rem;
+  }
+
+  body.annual-v7.mobile-poster .cover-section {
+    margin: -1rem -1rem 1.4rem;
+    padding: 2.4rem 1.5rem 2.8rem;
+    border-radius: 0 0 26px 26px;
+  }
+
+  body.annual-v7.mobile-poster .cover-frame {
+    gap: 1rem;
+    text-align: center;
+    padding-top: 0.9rem;
+  }
+
+  body.annual-v7.mobile-poster .cover-left,
+  body.annual-v7.mobile-poster .cover-right {
+    text-align: center;
+  }
+
+  body.annual-v7.mobile-poster .cover-kicker {
+    font-size: 0.7rem;
+  }
+
+  body.annual-v7.mobile-poster .cover-title {
+    font-size: 2.4rem;
+    line-height: 1.04;
+    margin-top: 0.9rem;
+  }
+
+  body.annual-v7.mobile-poster .cover-subtitle {
+    font-size: 1rem;
+    line-height: 1.55;
+    max-width: 16rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  body.annual-v7.mobile-poster .cover-meta {
+    margin: 1.1rem auto 0;
+    justify-content: center;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.7rem;
+  }
+
+  body.annual-v7.mobile-poster .user-info {
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  body.annual-v7.mobile-poster .nickname {
+    font-size: 1.8rem;
+  }
+
+  body.annual-v7.mobile-poster .labels-container {
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  body.annual-v7.mobile-poster .label-badge {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
+  }
+
+  body.annual-v7.mobile-poster .mascot-badge-img {
+    width: 72px;
+    height: 72px;
+    right: 0.85rem;
+    top: 0.7rem;
+    transform: rotate(6deg);
+  }
+
+  body.annual-v7.mobile-poster .cover-stamp {
+    left: 50%;
+    right: auto;
+    bottom: -0.6rem;
+    transform: translateX(-50%) rotate(-3deg);
+  }
+
+  body.annual-v7.mobile-poster .section-header {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  body.annual-v7.mobile-poster .section-kicker {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  body.annual-v7.mobile-poster .section-title {
+    font-size: 1.7rem;
+  }
+
+  body.annual-v7.mobile-poster .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+
+  body.annual-v7.mobile-poster .stat-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "icon label value"
+      "icon label unit";
+    align-items: center;
+    padding: 0.85rem 1rem;
+    box-shadow: none;
+    border: 1px dashed var(--line);
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  body.annual-v7.mobile-poster .stat-card::before {
+    display: none;
+  }
+
+  body.annual-v7.mobile-poster .stat-top {
+    display: contents;
+  }
+
+  body.annual-v7.mobile-poster .stat-icon {
+    grid-area: icon;
+    font-size: 1.1rem;
+  }
+
+  body.annual-v7.mobile-poster .stat-label {
+    grid-area: label;
+    font-size: 0.9rem;
+  }
+
+  body.annual-v7.mobile-poster .stat-value {
+    grid-area: value;
+    justify-self: end;
+    font-size: 1.4rem;
+  }
+
+  body.annual-v7.mobile-poster .stat-unit {
+    grid-area: unit;
+    justify-self: end;
+    font-size: 0.75rem;
+  }
+
+  body.annual-v7.mobile-poster .chart-section {
+    border: none;
+    background: transparent;
+    padding: 1.2rem 0.5rem;
+  }
+
+  body.annual-v7.mobile-poster .chart-shell {
+    padding: 1rem;
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 24px rgba(18, 24, 20, 0.12);
+  }
+
+  body.annual-v7.mobile-poster .monthly-chart {
+    height: 220px;
+    gap: 0.4rem;
+  }
+
+  body.annual-v7.mobile-poster .ai-section {
+    padding: 1.4rem;
+  }
+
+  body.annual-v7.mobile-poster .ai-content {
+    font-size: 0.95rem;
+    line-height: 1.8;
+  }
+
+  body.annual-v7.mobile-poster .ai-content h3 {
+    padding-left: 0;
+    text-align: center;
+  }
+
+  body.annual-v7.mobile-poster .ai-content h3::before {
+    display: none;
+  }
+
+  body.annual-v7.mobile-poster .finale-grid {
+    gap: 1.4rem;
+    text-align: center;
+  }
+
+  body.annual-v7.mobile-poster .finale-note {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  body.annual-v7.mobile-poster .finale-qr {
+    padding: 1rem;
+  }
+
+  body.annual-v7.mobile-poster .report-actions {
+    margin-top: 1.6rem;
+  }
+}
